@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import '/app.css';
+import './app.css';
+
 
 function App() {
   const storeAddressRef = useRef(null);
@@ -25,8 +26,8 @@ function App() {
       <section className="hero-section">
         <div className="hero-background"></div>
         <div className="hero-content fade-in">
-          <h1>🚀 SeeYouSoon Deliveries</h1>
-          <p>Fast. Reliable. Same-day delivery across Accra & Tema.</p>
+          <h1>🚀SeeYouSoon Deliveries</h1>
+          <p> Quick And Safe Same-day delivery across Accra & Tema.</p>
           <a href="#booking" className="hero-button">
             Book a Delivery
           </a>
@@ -38,8 +39,10 @@ function App() {
         <div className="about-content">
           <h2>Who We Are 💡</h2>
           <p>
+            <b>
             SeeYouSoon Courier brings joy to your doorstep! We offer super-speedy same-day
             delivery of your favorite food, retail items, and essentials in Accra & Tema 🚴‍♂️.
+            </b>
           </p>
         </div>
       </section>
