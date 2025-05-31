@@ -1,0 +1,23 @@
+/* src/components/Hero.css */
+.hero {
+  background-color: #ffe5b4;
+  text-align: center;
+  padding: 100px 20px;
+  animation: fadeIn 2s ease-in;
+}
+
+.hero-title {
+  font-size: 3rem;
+  color: #ff7a00;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+}
+
+.hero-subtitle {
+  font-size: 1.5rem;
+  color: #333;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

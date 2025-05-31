@@ -1,0 +1,320 @@
+/* General styles */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #fdfdfd;
+  color: #2c3e50;
+}
+
+/* Hero Section */
+.hero-section {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  padding: 2rem;
+}
+
+/* Background image with moderate blur */
+.hero-background {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url('/images/hero-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  filter: blur(6px) brightness(1);
+  z-index: 0;
+  transition: filter 0.5s ease;
+}
+
+/* Hero content appears above background */
+.hero-content {
+  position: relative;
+  z-index: 1;
+  background-color: rgba(255, 255, 255, 0.85);
+  padding: 2rem 3rem;
+  border-radius: 12px;
+  max-width: 700px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Headline styling */
+.hero-content h1 {
+  font-size: 3rem;
+  margin: 0 0 1rem 0;
+  font-weight: 700;
+}
+
+/* Paragraph styling */
+.hero-content p {
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.scroll-button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  font-size: 1.1rem;
+  background-color: #ff6b6b;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+  text-decoration: none;
+}
+
+.scroll-button:hover {
+  background-color: #e04e4e;
+}
+
+/* Button styling */
+.hero-content button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.1rem;
+  background-color: #ff6b6b;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.hero-content button:hover {
+  background-color: #e04e4e;
+}
+
+/* Fade-in animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  opacity: 0;
+  animation-name: fadeInUp;
+  animation-duration: 0.8s;
+  animation-fill-mode: forwards;
+  animation-timing-function: ease-out;
+}
+
+.fade-in.delay-1 {
+  animation-delay: 0.3s;
+}
+
+.fade-in.delay-2 {
+  animation-delay: 0.6s;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-content {
+    padding: 1.5rem 2rem;
+  }
+  .hero-content h1 {
+    font-size: 2.25rem;
+  }
+  .hero-content p {
+    font-size: 1rem;
+  }
+  .hero-content button {
+    font-size: 1rem;
+    padding: 0.6rem 1.2rem;
+  }
+}
+
+/* Booking Section */
+.booking-section h2 {
+  font-weight: 700; /* bolder */
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.booking-section input,
+.booking-section textarea,
+.booking-section select,
+.booking-section fieldset {
+  font-weight: 600;  /* semi-bold */
+  font-size: 1rem;
+  color: #2c3e50;
+  border: 2px solid #ccc;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background-color: #fff;
+  transition: border-color 0.3s ease;
+  display: block;
+  width: 100%;
+  margin-bottom: 1rem;
+  box-sizing: border-box;
+}
+
+.booking-section input:focus,
+.booking-section textarea:focus,
+.booking-section select:focus {
+  border-color: #38ada9; /* highlight on focus */
+  outline: none;
+  box-shadow: 0 0 5px rgba(56, 173, 169, 0.5);
+}
+
+.booking-section fieldset {
+  border-width: 2px;
+  border-style: dashed;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border-radius: 12px;
+}
+
+.booking-section legend {
+  font-weight: 700;
+  color: #2c3e50;
+  padding: 0 0.5rem;
+}
+
+/* Bold order number input */
+.booking-form input[placeholder*="Order Number"] {
+  font-weight: 700;
+  font-size: 1.1rem;
+  border-color: #2c3e50;
+}
+
+/* Autocomplete input style */
+.booking-form input.autocomplete {
+  position: relative;
+}
+
+.booking-form input.autocomplete:focus {
+  border-color: #38ada9;
+  box-shadow: 0 0 8px rgba(56, 173, 169, 0.7);
+}
+
+/* Center Let's Make a Delivery heading */
+.booking-section h2 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* Form button style */
+.booking-form button[type="submit"] {
+  background-color: #38ada9;
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: block;
+  margin: 0 auto 2rem auto;
+  max-width: 300px;
+}
+
+.booking-form button[type="submit"]:hover {
+  background-color: #2f8f8b;
+}
+
+/* Responsive for booking form */
+@media (min-width: 768px) {
+  .booking-form {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .booking-section fieldset {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+}
+
+/* Other sections center text for consistency */
+.about-section,
+.services-section,
+.contact-section,
+.map-section {
+  max-width: 900px;
+  margin: 3rem auto;
+  padding: 0 1rem;
+  text-align: center;
+}
+
+/* Services cards styling */
+.service-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.service-cards .card {
+  flex: 1 1 160px;
+  max-width: 180px;
+  background-color: #f6f6f6;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
+  transition: transform 0.3s ease;
+  cursor: default;
+}
+
+.service-cards .card:hover {
+  transform: translateY(-6px);
+}
+
+.service-cards .card img {
+  width: 100%;
+  height: auto;
+  margin-bottom: 0.75rem;
+  border-radius: 8px;
+}
+
+.service-cards .card div {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #2c3e50;
+}
+
+
+/* Hero Button Style */
+.hero-button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  font-size: 1.15rem;
+  background-color: #ff6b6b;
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.hero-button:hover {
+  background-color: #e04e4e;
+  transform: translateY(-2px);
+}
+
+.hero-button:active {
+  transform: scale(0.98);
+}
