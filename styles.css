@@ -1,0 +1,23 @@
+header {
+    background: url('photo_2025-05-28_10-28-51.jpg') no-repeat center center;
+    background-size: contain;
+    background-color: #fff;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    padding-bottom: 1rem;
+    text-align: center;
+    color: #ff6600;
+  }
+  
+  header p {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: bold;
+  }
+  
