@@ -27,7 +27,7 @@ function App() {
         <div className="hero-background"></div>
         <div className="hero-content fade-in">
           <h1>🚀SeeYouSoon Deliveries</h1>
-          <p> Quick And Safe Same-day delivery across Accra & Tema.</p>
+          <p> Quick And Reliable Same-day delivery across Accra & Tema.</p>
           <a href="#booking" className="hero-button">
             Book a Delivery
           </a>
