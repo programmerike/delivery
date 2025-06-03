@@ -1,94 +1,63 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Autocomplete } from '@react-google-maps/api';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import './app.css';
+import ThankYou from './pages/ThankYou';
 
-function DeliveryForm() {
-  const [formData, setFormData] = useState({
-    orderNumber: '',
-    storeName: '',
-    storePhone: '',
-    storeAddress: '',
-    storeTime: '11:10',
-    storeDate: '2025-05-30',
-    customerName: '',
-    customerPhone: '',
-    customerEmail: '',
-    deliveryAddress: '',
-    deliveryDate: '2025-05-30',
-    deliveryTime: '11:50',
-    itemName: '',
-    deliveryFee: '',
-    tips: '',
-    total: '',
-    instructions: '',
-    paymentMethod: '',
-  });
+function App() {
+  const storeAddressRef = useRef(null);
+  const deliveryAddressRef = useRef(null);
 
-  const navigate = useNavigate();
-
-  const storeAutocompleteRef = useRef(null);
-  const deliveryAutocompleteRef = useRef(null);
-
-  const handlePlaceChanged = (type) => {
-    let place;
-    if (type === 'store' && storeAutocompleteRef.current) {
-      place = storeAutocompleteRef.current.getPlace();
-    } else if (type === 'delivery' && deliveryAutocompleteRef.current) {
-      place = deliveryAutocompleteRef.current.getPlace();
-    } else {
-      return;
-    }
-
-    if (place && place.formatted_address) {
-      setFormData((prev) => ({
-        ...prev,
-        ...(type === 'store'
-          ? { storeAddress: place.formatted_address }
-          : { deliveryAddress: place.formatted_address }),
-      }));
-    }
-  };
-
-  // Handle inputs
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    if (
-      ['deliveryFee', 'tips', 'total'].includes(name) &&
-      value !== '' &&
-      isNaN(Number(value))
-    ) {
-      return;
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const calculateTotal = () => {
-    const deliveryFeeNum = Number(formData.deliveryFee) || 0;
-    const tipsNum = Number(formData.tips) || 0;
-    const totalAmount = deliveryFeeNum + tipsNum;
-    setFormData((prev) => ({ ...prev, total: totalAmount.toString() }));
-  };
+  const [storeLocation, setStoreLocation] = useState(null);
+  const [deliveryLocation, setDeliveryLocation] = useState(null);
 
   useEffect(() => {
-    calculateTotal();
-  }, [formData.deliveryFee, formData.tips]);
+    if (window.google && window.google.maps) {
+      const autocompleteStore = new window.google.maps.places.Autocomplete(storeAddressRef.current, {
+        types: ['geocode'],
+        componentRestrictions: { country: 'gh' }
+      });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+      autocompleteStore.addListener('place_changed', () => {
+        const place = autocompleteStore.getPlace();
+        if (place.geometry) {
+          setStoreLocation({
+            lat: place.geometry.location.lat(),
+            lng: place.geometry.location.lng()
+          });
+        }
+      });
 
-    // TODO: Add backend/Shipday submission here
+      const autocompleteDelivery = new window.google.maps.places.Autocomplete(deliveryAddressRef.current, {
+        types: ['geocode'],
+        componentRestrictions: { country: 'gh' }
+      });
 
-    navigate('/thank-you');
-  };
+      autocompleteDelivery.addListener('place_changed', () => {
+        const place = autocompleteDelivery.getPlace();
+        if (place.geometry) {
+          setDeliveryLocation({
+            lat: place.geometry.location.lat(),
+            lng: place.geometry.location.lng()
+          });
+        }
+      });
+    }
+  }, []);
 
   return (
     <div>
-      {/* Your full form JSX here, exactly as you wrote it */}
+      {/* Hero Section */}
+      <section className="hero-section">
+        <div className="hero-background"></div>
+        <div className="hero-content fade-in">
+          <h1>🚀SeeYouSoon Deliveries</h1>
+          <p> Quick And Reliable Same-day delivery across Accra & Tema.</p>
+          <a href="#booking" className="hero-button">
+            Book a Delivery
+          </a>
+        </div>
+      </section>
+
       {/* About Section */}
       <section className="about-section">
         <div className="about-content">
@@ -124,181 +93,64 @@ function DeliveryForm() {
       <section className="booking-section" id="booking">
         <div className="order-container">
           <h2>Let's Make a Delivery!</h2>
-          <form className="booking-form" onSubmit={handleSubmit}>
+          <form className="booking-form" action="https://formsubmit.co/seeyousoon.deliveries@gmail.com" method="POST">
             <input type="hidden" name="_captcha" value="false" />
-            <input
-              type="hidden"
-              name="_redirect"
-              value="https://seeyousoondeliveries.com/thank-you"
-            />
+            <input type="hidden" name="_redirect" value="https://seeyousoondeliveries.com/thank-you" />
 
-            <input
-              type="text"
-              name="orderNumber"
-              placeholder="🔢 Order Number"
-              required
-              className="bold-input"
-              value={formData.orderNumber}
-              onChange={handleChange}
-            />
+            <input type="text" placeholder="🔢 Order Number" required className="bold-input" />
 
             <fieldset>
               <legend>📍 Pick-up From</legend>
-              <input
-                type="text"
-                name="storeName"
-                placeholder="🏪 Store Name"
-                required
-                value={formData.storeName}
-                onChange={handleChange}
-              />
-              <input
-                type="tel"
-                name="storePhone"
-                placeholder="📞 +233 (000) 000-00-00"
-                required
-                value={formData.storePhone}
-                onChange={handleChange}
-              />
-              <Autocomplete
-                onLoad={(auto) => (storeAutocompleteRef.current = auto)}
-                onPlaceChanged={() => handlePlaceChanged('store')}
-                options={{
-                  types: ['geocode'],
-                  componentRestrictions: { country: 'gh' },
-                }}
-              >
-                <input
-                  type="text"
-                  name="storeAddress"
-                  placeholder="📍 Store Address"
-                  required
-                  value={formData.storeAddress}
-                  onChange={handleChange}
+              <input type="text" placeholder="🏪 Store Name" required />
+              <input type="tel" placeholder="📞 +233 (000) 000-00-00" required />
+              <input type="text" placeholder="📍 Store Address" required ref={storeAddressRef} />
+              {storeLocation && (
+                <iframe
+                  title="Pickup Map"
+                  width="100%"
+                  height="200"
+                  frameBorder="0"
+                  style={{ border: 0, marginTop: '0.5rem' }}
+                  src={`https://maps.google.com/maps?q=${storeLocation.lat},${storeLocation.lng}&z=15&output=embed`}
+                  allowFullScreen
                 />
-              </Autocomplete>
-              <input
-                type="time"
-                name="storeTime"
-                value={formData.storeTime}
-                onChange={handleChange}
-                placeholder="optional"
-              />
-              <input
-                type="date"
-                name="storeDate"
-                value={formData.storeDate}
-                onChange={handleChange}
-                placeholder="optional"
-              />
+              )}
+              <input type="time" defaultValue="11:10" />
+              <input type="date" defaultValue="2025-05-30" />
             </fieldset>
 
             <fieldset>
               <legend>🎯 Deliver To</legend>
-              <input
-                type="text"
-                name="customerName"
-                placeholder="👤 Customer Name"
-                required
-                value={formData.customerName}
-                onChange={handleChange}
-              />
-              <input
-                type="tel"
-                name="customerPhone"
-                placeholder="📞 +233 (000) 000-00-00"
-                required
-                value={formData.customerPhone}
-                onChange={handleChange}
-              />
-              <input
-                type="email"
-                name="customerEmail"
-                placeholder="✉️ Email Address optional"
-                value={formData.customerEmail}
-                onChange={handleChange}
-              />
-              <Autocomplete
-                onLoad={(auto) => (deliveryAutocompleteRef.current = auto)}
-                onPlaceChanged={() => handlePlaceChanged('delivery')}
-                options={{
-                  types: ['geocode'],
-                  componentRestrictions: { country: 'gh' },
-                }}
-              >
-                <input
-                  type="text"
-                  name="deliveryAddress"
-                  placeholder="📍 Delivery Address"
-                  required
-                  value={formData.deliveryAddress}
-                  onChange={handleChange}
+              <input type="text" placeholder="👤 Customer Name" required />
+              <input type="tel" placeholder="📞 +233 (000) 000-00-00" required />
+              <input type="email" placeholder="✉️ Email Address optional" />
+              <input type="text" placeholder="📍 Delivery Address" required ref={deliveryAddressRef} />
+              {deliveryLocation && (
+                <iframe
+                  title="Delivery Map"
+                  width="100%"
+                  height="200"
+                  frameBorder="0"
+                  style={{ border: 0, marginTop: '0.5rem' }}
+                  src={`https://maps.google.com/maps?q=${deliveryLocation.lat},${deliveryLocation.lng}&z=15&output=embed`}
+                  allowFullScreen
                 />
-              </Autocomplete>
-              <input
-                type="date"
-                name="deliveryDate"
-                value={formData.deliveryDate}
-                onChange={handleChange}
-                placeholder="optional"
-              />
-              <input
-                type="time"
-                name="deliveryTime"
-                value={formData.deliveryTime}
-                onChange={handleChange}
-                placeholder="optional"
-              />
+              )}
+              <input type="date" defaultValue="2025-05-30" />
+              <input type="time" defaultValue="11:50" />
             </fieldset>
 
             <fieldset>
               <legend>🧾 Order Details</legend>
-              <input
-                type="text"
-                name="itemName"
-                placeholder="🛒 Item Name"
-                value={formData.itemName}
-                onChange={handleChange}
-              />
-              <input
-                type="number"
-                name="deliveryFee"
-                placeholder="🚚 Delivery Fees (₵)"
-                min="0"
-                value={formData.deliveryFee}
-                onChange={handleChange}
-              />
-              <input
-                type="number"
-                name="tips"
-                placeholder="🎁 Tips (₵)"
-                min="0"
-                value={formData.tips}
-                onChange={handleChange}
-              />
-              <input
-                type="number"
-                name="total"
-                placeholder="💵 Total (₵)"
-                readOnly
-                value={formData.total}
-              />
+              <input type="text" placeholder="🛒 Item Name" />
+              <input type="number" placeholder="🚚 Delivery Fees (₵)" />
+              <input type="number" placeholder="🎁 Tips (₵)" />
+              <input type="number" placeholder="💵 Total (₵)" />
             </fieldset>
 
-            <textarea
-              name="instructions"
-              placeholder="🗒️ Any fun delivery instructions?"
-              rows={3}
-              value={formData.instructions}
-              onChange={handleChange}
-            />
+            <textarea placeholder="🗒️ Any fun delivery instructions?" rows={3}></textarea>
 
-            <select
-              name="paymentMethod"
-              required
-              value={formData.paymentMethod}
-              onChange={handleChange}
-            >
+            <select required>
               <option value="">💳 Choose a Payment Method</option>
               <option value="cash">💵 Cash on Delivery</option>
               <option value="momo">📱 Mobile Money</option>
@@ -314,13 +166,10 @@ function DeliveryForm() {
       <section className="contact-section">
         <h2>📬 Contact Us</h2>
         <p>
-          Email:{' '}
-          <a href="mailto:seeyousoon.delivery@gmail.com">seeyousoon.deliveries@gmail.com</a>
+          Email: <a href="mailto:seeyousoon.delivery@gmail.com">seeyousoon.deliveries@gmail.com</a>
         </p>
         <p>
-          Phone: <a href="tel:+233533846238"> +233 53 384 6238 </a>
-        </p>
-        <p>
+          Phone: <a href="tel:+233533846238">+233 53 384 6238</a><br />
           <a href="tel:+233531448173">+233 53 144 8173</a>
         </p>
       </section>
@@ -329,18 +178,17 @@ function DeliveryForm() {
       <section className="map-section">
         <h2>🗺️ We Deliver In:</h2>
         <iframe
-          title="Map"
+          title="Coverage Map"
           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126917.96664707348!2d-0.26272953441869345!3d5.614818856901056!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfe2a5490bfc5bb9%3A0x5f9e7f7e8e8e8e8e!2sAccra!5e0!3m2!1sen!2sgh!4v1717079468473"
           width="100%"
           height="300"
-          style={{ border: 0, borderRadius: '8px' }}
+          style={{ border: 0 }}
           allowFullScreen=""
           loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-        />
+        ></iframe>
       </section>
     </div>
   );
 }
 
-export default DeliveryForm;
+export default App;

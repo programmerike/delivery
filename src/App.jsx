@@ -1,179 +1,155 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import ThankYou from './pages/ThankYou';
 import './app.css';
-import DeliveryForm from './DeliveryForm';
-import ThankYou from './pages/ThankYou'; // Your thank-you page component
-import { LoadScript } from '@react-google-maps/api';
+import calculateDistanceAndFee from './utils/calculateDistanceAndFee';
 
-function DeliveryForm() {
+function MainApp() {
   const storeAddressRef = useRef(null);
   const deliveryAddressRef = useRef(null);
-
+  const [storeLocation, setStoreLocation] = useState(null);
+  const [deliveryLocation, setDeliveryLocation] = useState(null);
   const [distance, setDistance] = useState(null);
-  const [deliveryFee, setDeliveryFee] = useState(22); // base fee GH₵22
-  const [tips, setTips] = useState("");
-  const [total, setTotal] = useState(22);
+  const [fee, setFee] = useState(null);
+  const navigate = useNavigate();
 
-  // Initialize Google Places Autocomplete
   useEffect(() => {
     if (window.google && window.google.maps) {
-      new window.google.maps.places.Autocomplete(storeAddressRef.current, {
+      const autocompleteStore = new window.google.maps.places.Autocomplete(storeAddressRef.current, {
         types: ['geocode'],
         componentRestrictions: { country: 'gh' }
       });
-      new window.google.maps.places.Autocomplete(deliveryAddressRef.current, {
+
+      autocompleteStore.addListener('place_changed', () => {
+        const place = autocompleteStore.getPlace();
+        if (place.geometry) {
+          const location = {
+            lat: place.geometry.location.lat(),
+            lng: place.geometry.location.lng()
+          };
+          setStoreLocation(location);
+        }
+      });
+
+      const autocompleteDelivery = new window.google.maps.places.Autocomplete(deliveryAddressRef.current, {
         types: ['geocode'],
         componentRestrictions: { country: 'gh' }
+      });
+
+      autocompleteDelivery.addListener('place_changed', () => {
+        const place = autocompleteDelivery.getPlace();
+        if (place.geometry) {
+          const location = {
+            lat: place.geometry.location.lat(),
+            lng: place.geometry.location.lng()
+          };
+          setDeliveryLocation(location);
+        }
       });
     }
   }, []);
 
-  // Calculate distance and delivery fee when addresses change
   useEffect(() => {
-    const storeAddress = storeAddressRef.current?.value;
-    const deliveryAddress = deliveryAddressRef.current?.value;
-
-    if (storeAddress && deliveryAddress && window.google) {
-      const service = new window.google.maps.DistanceMatrixService();
-      service.getDistanceMatrix(
-        {
-          origins: [storeAddress],
-          destinations: [deliveryAddress],
-          travelMode: window.google.maps.TravelMode.DRIVING,
-        },
-        (response, status) => {
-          if (status === 'OK') {
-            const distanceInMeters = response.rows[0].elements[0].distance.value;
-            const km = distanceInMeters / 1000;
-            setDistance(km);
-
-            // Delivery fee logic
-            let fee = 20; // base fee
-            if (km > 4) {
-              fee += 4;
-            }
-            setDeliveryFee(fee);
-          } else {
-            setDistance(null);
-            setDeliveryFee(20);
-          }
-        }
-      );
-    } else {
-      setDistance(null);
-      setDeliveryFee(20);
+    if (storeLocation && deliveryLocation) {
+      const { distance, fee } = calculateDistanceAndFee(storeLocation, deliveryLocation);
+      setDistance(distance);
+      setFee(fee);
     }
-  }, [
-    storeAddressRef.current?.value,
-    deliveryAddressRef.current?.value,
-  ]);
+  }, [storeLocation, deliveryLocation]);
 
-  // Update total when delivery fee or tips change
-  useEffect(() => {
-    const totalAmount = Number(deliveryFee) + Number(tips || 0);
-    setTotal(totalAmount);
-  }, [deliveryFee, tips]);
-
-  // Form submit handler (optional)
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add your submission logic here, e.g. send data to backend or Shipday
-    alert(`Order submitted! Total: GH₵${total}`);
+
+    const form = e.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    // Add distance and fee
+    data.distance = distance;
+    data.fee = fee;
+
+    const res = await fetch('https://your-backend-url.com/api/deliveries', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    if (res.ok) {
+      navigate('/thank-you');
+    }
   };
 
   return (
     <div>
-      {/* About Section */}
-      <section className="about-section">
-        <div className="about-content">
-          <h2>Who We Are 💡</h2>
-          <p>
-            <b>
-              SeeYouSoon Courier brings joy to your doorstep! We offer super-speedy same-day
-              delivery of your favorite food, retail items, and essentials in Accra & Tema 🚴‍♂️.
-            </b>
-          </p>
+      {/* Hero */}
+      <section className="hero-section">
+        <div className="hero-background" />
+        <div className="hero-content fade-in">
+          <h1>🚀 SeeYouSoon Deliveries</h1>
+          <p>Quick And Reliable Same-day delivery across Accra & Tema.</p>
+          <a href="#booking" className="hero-button">Book a Delivery</a>
         </div>
       </section>
 
-      {/* Services Section */}
-      <section className="services-section">
-        <h2>✨ Our Delightful Services</h2>
-        <div className="service-cards">
-          {[
-            { label: 'Food Delivery', src: '/images/food-delivery.png' },
-            { label: 'Retail Goods', src: '/images/retail-goods.png' },
-            { label: 'Medication', src: '/images/medication.png' },
-            { label: 'Personal Packages', src: '/images/personal-packages.png' },
-          ].map((service, idx) => (
-            <div className="card" key={idx}>
-              <img src={service.src} alt={service.label} />
-              <div>{service.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Booking Section */}
+      {/* Booking */}
       <section className="booking-section" id="booking">
         <div className="order-container">
           <h2>Let's Make a Delivery!</h2>
-          <form className="booking-form" onSubmit={handleSubmit} method="POST">
-            <input type="hidden" name="_captcha" value="false" />
-            <input type="hidden" name="_redirect" value="https://seeyousoondeliveries.com/thank-you" />
-
-            <input type="text" placeholder="🔢 Order Number" required className="bold-input" />
-
+          <form className="booking-form" onSubmit={handleSubmit}>
             <fieldset>
               <legend>📍 Pick-up From</legend>
-              <input type="text" placeholder="🏪 Store Name" required />
-              <input type="tel" placeholder="📞 +233 (000) 000-00-00" required />
-              <input type="text" placeholder="📍 Store Address" required ref={storeAddressRef} />
-              <input type="time" defaultValue="11:10" placeholder="optional" />
-              <input type="date" defaultValue="2025-05-30" placeholder="optional" />
+              <input type="text" name="storeName" placeholder="🏪 Store Name" required />
+              <input type="tel" name="storePhone" placeholder="📞 +233 (000) 000-00-00" required />
+              <input type="text" name="storeAddress" placeholder="📍 Store Address" required ref={storeAddressRef} />
+              {storeLocation && (
+                <iframe
+                  title="Pickup Map"
+                  width="100%"
+                  height="200"
+                  frameBorder="0"
+                  style={{ border: 0, marginTop: '0.5rem' }}
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d127066.72273031101!2d-0.26213092137685406!3d5.591373807227595!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdf9084b2b7a773%3A0xbed14ed8650e2dd3!2sAccra!5e0!3m2!1sen!2sgh!4v1748930121025!5m2!1sen!2sgh" 
+                  />
+              )}
+              <input type="time" name="pickupTime" defaultValue="11:10" /><input type="date" name="pickupDate" defaultValue="2025-05-30" />
             </fieldset>
 
             <fieldset>
               <legend>🎯 Deliver To</legend>
-              <input type="text" placeholder="👤 Customer Name" required />
-              <input type="tel" placeholder="📞 +233 (000) 000-00-00" required />
-              <input type="email" placeholder="✉️ Email Address (optional)" />
-              <input type="text" placeholder="📍 Delivery Address" required ref={deliveryAddressRef} />
-              <input type="date" defaultValue="2025-05-30" placeholder="optional" />
-              <input type="time" defaultValue="11:50" placeholder="optional" />
+              <input type="text" name="customerName" placeholder="👤 Customer Name" required />
+              <input type="tel" name="customerPhone" placeholder="📞 +233 (000) 000-00-00" required />
+              <input type="email" name="customerEmail" placeholder="✉️ Email Address optional" />
+              <input type="text" name="deliveryAddress" placeholder="📍 Delivery Address" required ref={deliveryAddressRef} />
+              {deliveryLocation && (
+                <iframe
+                  title="Delivery Map"
+                  width="100%"
+                  height="200"
+                  frameBorder="0"
+                  style={{ border: 0, marginTop: '0.5rem' }}
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d127066.72273031101!2d-0.26213092137685406!3d5.591373807227595!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdf9084b2b7a773%3A0xbed14ed8650e2dd3!2sAccra!5e0!3m2!1sen!2sgh!4v1748930121025!5m2!1sen!2sgh" 
+                  allowFullScreen
+                />
+              )}
+              <input type="date" name="deliveryDate" defaultValue="2025-05-30" />
+              <input type="time" name="deliveryTime" defaultValue="11:50" />
             </fieldset>
 
             <fieldset>
               <legend>🧾 Order Details</legend>
-              <input type="text" placeholder="🛒 Item Name" />
-              <input
-                type="number"
-                placeholder="🚚 Delivery Fees (₵)"
-                value={deliveryFee}
-                readOnly
-              />
-              <input
-                type="number"
-                placeholder="🎁 Tips (₵)"
-                value={tips}
-                onChange={(e) => setTips(e.target.value)}
-                min="0"
-              />
-              <input type="number" placeholder="💵 Total (₵)" value={total} readOnly />
+              <input type="text" name="itemName" placeholder="🛒 Item Name" />
+              <input type="number" name="tip" placeholder="🎁 Tips (₵)" />
+              <input type="number" name="total" placeholder="💵 Total (₵)" value={fee || ''} readOnly />
             </fieldset>
 
-            <textarea placeholder="🗒️ Any fun delivery instructions?" rows={3}></textarea>
+            <textarea name="instructions" placeholder="🗒 Any fun delivery instructions?" rows={3}></textarea>
 
-            <select required>
+            <select name="paymentMethod" required>
               <option value="">💳 Choose a Payment Method</option>
               <option value="cash">💵 Cash on Delivery</option>
               <option value="momo">📱 Mobile Money</option>
-              
+              <option value="card">💳 Credit/Debit Card</option>
             </select>
-
-            <p>📏 Distance: {distance ? `${distance.toFixed(2)} km` : 'N/A'}</p>
-            <p>🚚 Delivery Fee: GH₵{deliveryFee}</p>
-            <p>💵 Total: GH₵{total}</p>
 
             <button type="submit">🎉 Submit Order</button>
           </form>
@@ -183,49 +159,37 @@ function DeliveryForm() {
       {/* Contact Section */}
       <section className="contact-section">
         <h2>📬 Contact Us</h2>
+        <p>Email: <a href="mailto:seeyousoon.deliveries@gmail.com">seeyousoon.deliveries@gmail.com</a></p>
         <p>
-          Email:{' '}
-          <a href="mailto:seeyousoon.delivery@gmail.com">seeyousoon.deliveries@gmail.com</a>
-        </p>
-        <p>
-          Phone: <a href="tel:+233533846238">+233 53 384 6238</a>
-          <br />
+          Phone: <a href="tel:+233533846238">+233 53 384 6238</a><br />
           <a href="tel:+233531448173">+233 53 144 8173</a>
         </p>
       </section>
 
-      {/* Map Section */}
+      {/* Coverage Map */}
       <section className="map-section">
-        <h2>🗺️ We Deliver In:</h2>
+        <h2>🗺 We Deliver In:</h2>
         <iframe
-          title="Map"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126917.96664707348!2d-0.26272953441869345!3d5.614818856901056!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfe2a5490bfc5bb9%3A0x5f9e7f7e8e8e8e8e!2sAccra!5e0!3m2!1sen!2sgh!4v1717079468473"
+          title="Coverage Map"
+         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d253833.51858247174!2d-0.35636017814489686!3d5.614818856901063!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfe2a5490bfc5bb9%3A0x5f9e7f7e8e8e8e8e!2sAccra%2C%20Ghana!5e0!3m2!1sen!2sgh!4v1717443012345!5m2!1sen!2sgh"
           width="100%"
           height="300"
           style={{ border: 0 }}
-          allowFullScreen=""
+          allowFullScreen
           loading="lazy"
-        ></iframe>
+        />
       </section>
     </div>
   );
 }
 
-function App() {
+export default function App() {
   return (
-    <LoadScript
-      googleMapsApiKey="AIzaSyAe6wL6YBhQq6hKcZJvIBpe5Lr_wh_1aJQ
-"
-      libraries={['places']}
-    >
     <Router>
       <Routes>
-        <Route path="/" element={<DeliveryForm />} />
+        <Route path="/" element={<MainApp />} />
         <Route path="/thank-you" element={<ThankYou />} />
       </Routes>
     </Router>
-    </LoadScript>
   );
 }
-
-export default App;
