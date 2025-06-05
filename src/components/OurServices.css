@@ -1,0 +1,43 @@
+.services-section {
+  padding: 3rem 1rem;
+  background: #fff;
+  text-align: center;
+}
+
+.services-section h2 {
+  font-size: 2rem;
+  color: #222;
+  margin-bottom: 2rem;
+}
+
+.services-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.service-card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  padding: 1.5rem;
+  width: 220px;
+  transition: transform 0.3s;
+}
+
+.service-card:hover {
+  transform: translateY(-6px);
+}
+
+.service-card img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 1rem;
+}
+
+.service-card h3 {
+  font-size: 1.1rem;
+  color: #333;
+}

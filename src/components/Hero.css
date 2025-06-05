@@ -1,23 +1,148 @@
-/* src/components/Hero.css */
+/* Hero.css */
 .hero {
-  background-color: #ffe5b4;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  color: white;
+}
+
+.hero-overlay {
+  background-color: rgba(0, 0, 0, 0.4); /* dark overlay */
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-content {
   text-align: center;
-  padding: 100px 20px;
-  animation: fadeIn 2s ease-in;
+  padding: 2rem;
+  z-index: 1;
 }
 
-.hero-title {
-  font-size: 3rem;
-  color: #ff7a00;
-  font-family: 'Comic Sans MS', cursive, sans-serif;
+.hero-button {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: #ff5722;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: background 0.3s ease;
 }
 
-.hero-subtitle {
-  font-size: 1.5rem;
-  color: #333;
+.hero-button:hover {
+  background: #e64a19;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.fancy-button {
+  display: inline-block;
+  background-color: #ff6b00;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 50px;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(255, 107, 0, 0.3);
+  transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  animation: bounce-in 0.6s ease forwards;
+}
+
+.fancy-button:hover {
+  background-color: #e65c00;
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(255, 107, 0, 0.4);
+}
+
+@keyframes bounce-in {
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.hero {
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-overlay {
+  background-color: rgba(0, 0, 0, 0.4); /* Dark overlay */
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-card {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 2rem 3rem;
+  border-radius: 20px;
+  text-align: center;
+  backdrop-filter: blur(15px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  color: white;
+  animation: fadeInUp 1s ease-in-out;
+}
+
+.hero-card h1 {
+  font-size: 2.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.hero-card p {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+/* You already have .fancy-button in here */
+.fancy-button {
+  display: inline-block;
+  background-color: #ff6b00;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 50px;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(255, 107, 0, 0.3);
+  transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.fancy-button:hover {
+  background-color: #e65c00;
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(255, 107, 0, 0.4);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

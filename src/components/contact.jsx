@@ -1,15 +1,14 @@
 // src/components/Contact.jsx
 function Contact() {
   return (
-    <section className="contact">
-      <h2>Book a Delivery</h2>
-      <form>
-        <input type="text" placeholder="Your Name" required />
-        <input type="text" placeholder="Pickup Address" required />
-        <input type="text" placeholder="Delivery Address" required />
-        <button type="submit">Submit</button>
-      </form>
-    </section>
+    <section className="contact-section">
+        <h2>📬 Contact Us</h2>
+        <p>Email: <a href="mailto:seeyousoon.deliveries@gmail.com">seeyousoon.deliveries@gmail.com</a></p>
+        <p>
+          Phone: <a href="tel:+233533846238">+233 53 384 6238</a><br />
+          <a href="tel:+233531448173">+233 53 144 8173</a>
+        </p>
+      </section>
   );
 }
 

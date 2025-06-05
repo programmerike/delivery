@@ -1,85 +1,48 @@
-import express from 'express';
-import cors from 'cors';
-import bodyParser from 'body-parser';
-import dotenv from 'dotenv';
-import fetch from 'node-fetch';
-import { v4 as uuidv4 } from 'uuid';
+app.post("/calculate-fee", async (req, res) => {
+  const { pickupAddress, deliveryAddress } = req.body;
+  console.log("Received addresses:", pickupAddress, deliveryAddress);
 
-dotenv.config();
+  try {
+    // 🔧 Step 1: Format addresses to improve match accuracy
+    const formattedPickup = `${pickupAddress}, Ghana`;
+    const formattedDelivery = `${deliveryAddress}, Ghana`;
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+    // 🌍 Step 2: Call Google Distance Matrix API
+    const response = await fetch(
+      `https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=${encodeURIComponent(
+        formattedPickup
+      )}&destinations=${encodeURIComponent(
+        formattedDelivery
+      )}&key=${GOOGLE_MAPS_API_KEY}`
+    );
 
-app.use(cors());
-app.use(bodyParser.json());
+    const data = await response.json();
+    console.log("Google API Response:", data);
 
-// Health check
-app.get('/', (req, res) => {
-res.send('SeeYouSoon backend is running!');
-});
+    // ✅ Step 3: Extract and use the distance
+    if (
+      data.status === "OK" &&
+      data.rows[0].elements[0].status === "OK"
+    ) {
+      const distanceInMeters = data.rows[0].elements[0].distance.value;
+      const distanceInKm = distanceInMeters / 1000;
 
-// Distance and delivery fee calculation
-app.post('/api/submit-delivery', async (req, res) => {
-try {
-const { pickupAddress, deliveryAddress } = req.body;
-const apiKey = process.env.AIzaSyAe6wL6YBhQq6hKcZJvIBpe5Lr_wh_1aJQ;const mapsURL = `https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=${encodeURIComponent(
-  pickupAddress
-)}&destinations=${encodeURIComponent(deliveryAddress)}&key=${apiKey}`;
+      // 💵 Fee logic
+      let fee;
+      if (distanceInKm <= 3) {
+        fee = 18;
+      } else if (distanceInKm <= 4.5) {
+        fee = 22;
+      } else {
+        fee = 22 + Math.ceil((distanceInKm - 4.5) / 2) * 4;
+      }
 
-const response = await fetch(mapsURL);
-const data = await response.json();
-
-if (
-  data.rows &&
-  data.rows[0].elements &&
-  data.rows[0].elements[0].status === 'OK'
-) {
-  const distanceInKm = data.rows[0].elements[0].distance.value / 1000;
-
-  // Fee calculation based on rules
-  let deliveryFee = 0;
-  if (distanceInKm <= 3) {
-    deliveryFee = 18;
-  } else if (distanceInKm <= 4.5) {
-    deliveryFee = 22;
-  } else {
-    const extraKm = Math.ceil((distanceInKm - 4.5) / 2);
-    deliveryFee = 22 + extraKm * 4;
+      return res.json({ fee, distance: distanceInKm.toFixed(2) });
+    } else {
+      return res.status(400).json({ error: "Unable to calculate distance from Google API." });
+    }
+  } catch (error) {
+    console.error("Error calculating fee:", error);
+    res.status(500).json({ error: "Something went wrong" });
   }
-
-  return res.json({
-    distance: distanceInKm.toFixed(2),
-    deliveryFee,
-    message: 'Calculation successful ✅',
-  });
-} else {
-  return res.status(400).json({ error: 'Failed to calculate distance' });
-}} catch (error) {
-console.error('Error calculating distance:', error.message);
-res.status(500).json({ error: 'Server error during calculation' });
-}
-});
-
-// Order submission with verification codes
-app.post('/api/deliveries', (req, res) => {
-const formData = req.body;
-
-const orderId = 'S-' + Math.floor(100000 + Math.random() * 900000);
-const pickupCode = uuidv4().split('-')[0].toUpperCase();
-const deliveryCode = uuidv4().split('-')[0].toUpperCase();
-
-const summary = {
-orderId,
-pickupCode,
-deliveryCode,
-...formData
-};
-
-console.log('📦 New Delivery Submission:', summary);
-res.json(summary);
-});
-
-
-app.listen(PORT, () => {
-console.log('✅ Server is listening on port 5000');
 });

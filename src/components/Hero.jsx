@@ -1,14 +1,26 @@
-// src/components/Hero.jsx
-import React from 'react';
-import './Hero.css';
+import React from "react";
+import "./Hero.css";
+import Background from "../assets/background.jpg"; // Adjust path if needed
 
-function Hero() {
+export default function Hero() {
   return (
-    <div className="hero">
-      <h1 className="hero-title">SeeYouSoon Courier 🚀</h1>
-      <p className="hero-subtitle">Fast, Reliable & Same-Day Deliveries in Accra & Tema</p>
-    </div>
+    <section
+      className="hero"
+      style={{ backgroundImage: `url(${Background})` }}
+    >
+      <div className="hero-overlay">
+        <div className="hero-card">
+          <h1>Welcome To SeeYouSoon Deliveries</h1>
+          <p>
+            <b>
+              Fast. Reliable delivery across Accra & Tema.
+              </b>
+            </p>
+          <a href="#delivery-form" className="hero-button fancy-button">
+            🚚 Book a Delivery
+          </a>
+        </div>
+      </div>
+    </section>
   );
 }
-
-export default Hero;
