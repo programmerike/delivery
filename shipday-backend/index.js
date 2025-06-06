@@ -17,7 +17,7 @@ app.post('/api/create-order', async (req, res) => {
   const orderData = req.body;
 
   try {
-    const response = await fetch('https://api.shipday.com/v1/orders', {
+    const response = await fetch(`https://your-backend.onrender.com/calculate-fee?pickup=${encodeURIComponent(pickup)}&delivery=${encodeURIComponent(delivery)}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
