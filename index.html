@@ -22,18 +22,41 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
 
-    <!-- Google Maps Places API -->
     <script
-         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAe6wL6YBhQq6hKcZJvIBpe5Lr_wh_1aJQ&libraries=places"
-        async
-        defer
-        
-    ></script>
+  src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&v=weekly"
+  defer
+></script>
+<script defer>
+  customElements.define(
+    'place-autocomplete',
+    class extends HTMLElement {
+      connectedCallback() {
+        const input = document.createElement("input");
+        input.className = this.className;
+        input.placeholder = this.getAttribute("placeholder") || "";
+        this.appendChild(input);
+
+        const autocomplete = new google.maps.places.Autocomplete(input, {
+          fields: ["formatted_address", "geometry", "name"],
+          types: ["geocode"],
+        });
+
+        autocomplete.addListener("place_changed", () => {
+          const place = autocomplete.getPlace();
+          this.dispatchEvent(new CustomEvent("placeChanged", {
+            detail: { place },
+          }));
+        });
+      }
+    }
+  );
+</script>
+
 
 
     <title>SeeYouSoon Deliveries</title>
-    <script type="module" crossorigin src="/assets/index-CCAsZsfF.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-DBg4xEvD.css">
+    <script type="module" crossorigin src="/assets/index-2HoGCjvy.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-Bo88GvYt.css">
   </head>
   <body>
     <div id="root"></div>
