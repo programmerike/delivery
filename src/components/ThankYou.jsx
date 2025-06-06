@@ -1,23 +1,49 @@
 // src/pages/ThankYouPage.jsx
-import React from 'react';
-import { useLocation } from 'react-router-dom';
+import React from "react";
+import { useLocation } from "react-router-dom";
+import "../styles/thankyou.css";
 
 const ThankYouPage = () => {
-  const { state } = useLocation();
-
-  if (!state) return <p>Invalid Access</p>;
+  const location = useLocation();
+  const { state } = location || {};
+  const {
+    orderNumber,
+    pickupAddress,
+    deliveryAddress,
+    distance,
+    deliveryFee,
+    tip,
+    total,
+    pickupCode,
+    deliveryCode,
+  } = state || {};
 
   return (
-    <div className="thank-you-page">
-      <h1>Thank You for Your Order!</h1>
-      <p><strong>Order ID:</strong> {state.orderId}</p>
-      <p><strong>Name:</strong> {state.name}</p>
-      <p><strong>Email:</strong> {state.email}</p>
-      <p><strong>Pickup Zone:</strong> {state.pickupZone}</p>
-      <p><strong>Delivery Zone:</strong> {state.deliveryZone}</p>
-      <p><strong>Package:</strong> {state.packageType}</p>
-     <p>Total Amount: <strong>GH₵{orderDetails.total}</strong></p>
-      <p><strong>Verification Code:</strong> {state.code}</p>
+    <div className="thankyou-container">
+      <div className="thankyou-card">
+        <h1 className="main-message">SeeYouSoon 🏍️ᯓ</h1>
+        <p className="sub-message">Your delivery has been booked successfully!</p>
+
+        <div className="details-box">
+          <p><strong>Order Number:</strong> #{orderNumber}</p>
+          <p><strong>Pickup:</strong> {pickupAddress}</p>
+          <p><strong>Delivery:</strong> {deliveryAddress}</p>
+          <p><strong>Distance:</strong> {distance} km</p>
+          <p><strong>Delivery Fee:</strong> GH₵{deliveryFee}</p>
+          {tip && <p><strong>Tip:</strong> GH₵{tip}</p>}
+          <p className="total-amount"><strong>Total to Pay Rider:</strong> GH₵{total}</p>
+        </div>
+
+        <div className="code-section">
+          <p className="code-label">📦 One-Time Pickup Code:</p>
+          <div className="code">{pickupCode}</div>
+
+          <p className="code-label">📬 One-Time Delivery Code:</p>
+          <div className="code">{deliveryCode}</div>
+        </div>
+
+        <p className="footer-message">Thank you for choosing SeeYouSoon! 🧡</p>
+      </div>
     </div>
   );
 };

@@ -1,82 +1,87 @@
-.thank-you-container {
-  max-width: 700px;
-  margin: 4rem auto;
+/* src/styles/ThankYouPage.css */
+
+.thankyou-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(to right, #f8f9fa, #e3f2fd);
   padding: 2rem;
-  text-align: center;
-  background: linear-gradient(145deg, #ffffff, #f3f3f3);
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  animation: fadeIn 1.2s ease-out;
   font-family: 'Segoe UI', sans-serif;
 }
 
-.thank-you-container h1 {
-  font-size: 2.5rem;
-  color: #1e88e5;
+.thankyou-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+.main-message {
+  font-size: 2rem;
+  color: #e5811e;
   margin-bottom: 0.5rem;
 }
 
-.thank-you-container p {
-  font-size: 1.1rem;
-  color: #444;
+.sub-message {
+  font-size: 1.2rem;
+  color: #555;
+  margin-bottom: 1.5rem;
 }
 
-.summary-card {
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin: 2rem 0;
+.details-box {
   text-align: left;
+  background: #f1f8ff;
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
 }
 
-.summary-card h2 {
-  color: #2e7d32;
-  margin-bottom: 1rem;
+.total-amount {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #d32f2f;
+  margin-top: 1rem;
 }
 
-.summary-card ul {
-  list-style: none;
-  padding: 0;
+.code-section {
+  margin-top: 1rem;
 }
 
-.summary-card li {
-  padding: 0.5rem 0;
-  font-size: 1rem;
-}
-
-.summary-card li strong {
+.code-label {
+  font-weight: 600;
+  margin: 0.5rem 0 0.2rem;
   color: #333;
 }
 
 .code {
-  font-family: monospace;
-  background: #e3f2fd;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  color: #1565c0;
-}
-
-.return-link a {
-  display: inline-block;
-  margin-top: 1.5rem;
-  color: #1e88e5;
-  text-decoration: none;
+  font-size: 1.5rem;
   font-weight: bold;
-  transition: color 0.3s ease;
+  background: #fff9c4;
+  border: 2px dashed #fbc02d;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 10px;
 }
 
-.return-link a:hover {
-  color: #0d47a1;
+.footer-message {
+  margin-top: 1.5rem;
+  font-size: 1rem;
+  color: #888;
 }
 
 @keyframes fadeIn {
   from {
+    transform: translateY(20px);
     opacity: 0;
-    transform: translateY(24px);
   }
   to {
-    opacity: 1;
     transform: translateY(0);
+    opacity: 1;
   }
 }
