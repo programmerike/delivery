@@ -2,8 +2,8 @@
 import { useState } from 'react';
 
 function VerifyCode() {
-  const [input, setInput] = useState('');
-  const [result, setResult] = useState(null);
+  const [input, setInput] = useState("");
+  const [result, setResult] = useState("");
 
   const handleVerify = async () => {
     const res = await fetch('https://your-backend.com/api/verify', {

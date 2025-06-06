@@ -8,11 +8,14 @@ import HomePage from "./components/HomePage";
 import OurServices from "./components/OurServices";
 
 
+
 function MainApp() {
   const storeAddressRef = useRef(null);
   const deliveryAddressRef = useRef(null);
   const storeLocation = { lat: 5.6148, lng: -0.2058 }; // Replace with dynamic state if needed
   const deliveryLocation = { lat: 5.6500, lng: -0.1900 }; // Replace with dynamic state if needed
+
+  
   
   return (
     <div>

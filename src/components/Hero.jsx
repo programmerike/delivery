@@ -12,13 +12,22 @@ export default function Hero() {
         <div className="hero-card">
           <h1>Welcome To SeeYouSoon Deliveries</h1>
           <p>
-            <b>
-              Fast. Reliable delivery across Accra & Tema.
-              </b>
-            </p>
-          <a href="#delivery-form" className="hero-button fancy-button">
-            🚚 Book a Delivery
-          </a>
+            <b>Fast. Reliable delivery across Accra & Tema.</b>
+          </p>
+
+          <div className="fancy-button">
+            <button
+            type="submit" className="animated-submit" style={{ marginTop: "1rem" }}
+              onClick={() => {
+                const form = document.getElementById("delivery-form");
+                if (form) {
+                  form.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
+            >
+              Book a Delivery
+            </button>
+          </div>
         </div>
       </div>
     </section>

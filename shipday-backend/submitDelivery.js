@@ -4,6 +4,20 @@ import crypto from 'crypto';
 
 const router = express.Router();
 
+const newOrder = new Order({
+  senderName,
+  pickupAddress,
+  deliveryAddress,
+  fee,
+  distance,
+  pickupCode,
+  deliveryCode
+});
+
+await newOrder.save();
+await sendOrderEmail(newOrder); // send email notification
+
+
 const verificationCodes = {}; // In-memory storage
 
 function generateCode() {
