@@ -63,7 +63,7 @@ app.post("/calculate-fee", async (req, res) => {
         formattedPickup
       )}&destinations=${encodeURIComponent(
         formattedDelivery
-      )}&key=${GOOGLE_MAPS_API_KEY}`
+      )}&key=${VITE_GOOGLE_MAPS_API_KEY}`
     );
 
     const data = await response.json();
