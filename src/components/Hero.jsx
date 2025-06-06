@@ -17,7 +17,7 @@ export default function Hero() {
 
           <div className="fancy-button">
             <button
-            type="submit" className="animated-submit" style={{ marginTop: "1rem" }}
+            type="button" className="animated-submit" style={{ marginTop: "1rem" }}
               onClick={() => {
                 const form = document.getElementById("delivery-form");
                 if (form) {

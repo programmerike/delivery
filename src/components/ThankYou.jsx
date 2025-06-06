@@ -43,6 +43,9 @@ const ThankYouPage = () => {
         </div>
 
         <p className="footer-message">Thank you for choosing SeeYouSoon! 🧡</p>
+        <button className="back-home-btn" onClick={() => navigate('/')}>
+        ⬅ Back to Home
+      </button>
       </div>
     </div>
   );

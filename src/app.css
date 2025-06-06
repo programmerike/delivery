@@ -1,103 +1,80 @@
-/* App.css */
-
-body {
-  background: #f7f9fb;
-  font-family: 'Segoe UI', sans-serif;
-  margin: 0;
-  padding: 0;
-  color: #222;
-}
-
-.delivery-form {
+/* Center the form in a floating card */
+#delivery-form {
   max-width: 700px;
-  margin: 2rem auto;
+  margin: 3rem auto;
   padding: 2rem;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+  animation: fadeInUp 1s ease-out;
+  backdrop-filter: blur(10px);
 }
 
-.delivery-form fieldset {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.delivery-form legend {
-  font-weight: bold;
-  padding: 0 0.5rem;
-}
-
-.delivery-form input,
-.delivery-form textarea,
-.delivery-form select {
+/* Make all form elements clean and compact */
+#delivery-form input,
+#delivery-form select,
+#delivery-form textarea,
+#delivery-form button {
   width: 100%;
-  padding: 12px;
-  margin-top: 0.5rem;
-  margin-bottom: 1rem;
+  max-width: 400px;
+  margin: 0.6rem auto;
+  display: block;
+  padding: 10px 12px;
+  border-radius: 10px;
   border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 1rem;
-  box-sizing: border-box;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  animation: fadeIn 0.5s ease-out;
 }
 
-.delivery-form textarea {
-  resize: vertical;
-}
-
-.delivery-form select {
-  background-color: #f9f9f9;
-}
-
-.contact-section {
-  background-color: #f1f8ff;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-top: 2rem;
-}
-
-.contact-section h2 {
-  margin-top: 0;
-}
-
-.map-section {
-  margin-top: 2rem;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.animated-submit {
-  background: linear-gradient(to right, #f6840a, #e9680d);
-  color: white;
-  font-weight: bold;
-  padding: 0.8rem 1.5rem;
+/* Fieldset and legend cleanup */
+#delivery-form fieldset {
   border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 4px 14px rgba(0, 114, 255, 0.4);
+  margin-bottom: 1.5rem;
+  padding: 0;
 }
 
-.animated-submit:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6);
+#delivery-form legend {
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin-bottom: 0.7rem;
+  text-align: center;
+  color: #333;
 }
 
-.animated-submit:active {
-  transform: scale(0.97);
-}
-html{
-  scroll-behavior: smooth;
+/* Animate submit button */
+#delivery-form .animated-submit {
+  background-color: #1b8c5f;
+  color: white;
+  border: none;
+  font-weight: bold;
+  padding: 12px;
+  border-radius: 10px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* Fade-in animation */
+#delivery-form .animated-submit:hover {
+  background-color: #15764d;
+  transform: scale(1.02);
+}
+
+/* Fade-in animation keyframes */
 @keyframes fadeInUp {
-  from {
+  0% {
     opacity: 0;
     transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
   }
   to {
     opacity: 1;
@@ -105,77 +82,35 @@ html{
   }
 }
 
-/* Base hidden state */
-.fade-in-section {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+/* Responsive spacing */
+@media (max-width: 480px) {
+  #delivery-form {
+    padding: 1.5rem 1rem;
+  }
+
+  #delivery-form input,
+  #delivery-form select,
+  #delivery-form textarea {
+    max-width: 100%;
+  }
 }
 
-/* When in view */
-.fade-in-section.visible {
-  opacity: 1;
-  transform: translateY(0);
-  animation: fadeInUp 0.6s ease forwards;
-}
-
-.form-container {
-  max-width: 700px;
-  margin: 3rem auto;
-  padding: 2rem;
-  background-color: #ffffffdd;
+.animated-submit {
+  padding: 14px 26px;
+  background: linear-gradient(135deg, #cf6e0c, #15764d);
+  color: white;
+  border: none;
   border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-  transition: all 0.5s ease;
-}
-
-.fade-in-section {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-.fade-in-section.visible {
-  opacity: 1;
-  transform: none;
-}
-body {
-  background-color: #f9f9f9;
-  font-family: "Segoe UI", sans-serif;
-}
-
-.autocomplete-dropdown {
-  position: absolute;
-  z-index: 10;
-  background: white;
-  border: 1px solid #ccc;
-  width: 100%;
-  max-height: 200px;
-  overflow-y: auto;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.autocomplete-dropdown li {
-  padding: 8px;
-  cursor: pointer;
-}
-.autocomplete-dropdown li:hover {
-  background-color: #f0f0f0;
-}
-
-
-.fee-summary {
-  background: #f9f9f9;
-  border: 1px solid #ddd;
-  padding: 1rem;
-  margin-top: 1rem;
-  border-radius: 0.5rem;
   font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.3s ease;
+  animation: fadeInUp 1s ease-out;
 }
 
-.fee-summary .total {
-  font-size: 1.3rem;
-  color: #009879;
-  margin-top: 0.5rem;
+.animated-submit:hover {
+  background: linear-gradient(135deg, #ca630f, #0e5d3b);
+  transform: scale(1.05);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
 }
