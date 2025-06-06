@@ -1,4 +1,3 @@
-// server.js
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -16,174 +15,119 @@ app.use(express.json());
 
 const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 const SHIPDAY_API_KEY = process.env.SHIPDAY_API_KEY;
-const EMAIL_RECEIVER = process.env.EMAIL_RECEIVER; // your email
-const EMAIL_SENDER = process.env.EMAIL_SENDER;     // send from here via nodemailer (optional)
+const EMAIL_RECEIVER = process.env.EMAIL_RECEIVER;   // your notification email
+const EMAIL_SENDER = process.env.EMAIL_SENDER;       // your Gmail user for nodemailer
+const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD;   // your Gmail app password
 
-const orders = {}; // In-memory order store
+const orders = {}; // In-memory orders store
 
-// 📧 Email setup
+// Nodemailer transporter setup
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USERNAME, // Your Gmail address
-    pass: process.env.EMAIL_PASSWORD  // App password from Gmail
-  }
+    user: EMAIL_SENDER,
+    pass: EMAIL_PASSWORD,
+  },
 });
 
-// 📧 Email sender
-const sendOrderEmail = async (order) => {
+// Send order email function
+async function sendOrderEmail(order) {
   const mailOptions = {
-    from: `"SeeYouSoon Courier" <${process.env.EMAIL_USERNAME}>`,
-    to: EMAIL_RECEIVER || 'your.email@example.com',
-    subject: `New Delivery Order from ${order.senderName || 'Unknown Sender'}`,
+    from: `"SeeYouSoon Courier" <${EMAIL_SENDER}>`,
+    to: EMAIL_RECEIVER,
+    subject: `📬 New Delivery Order #${order.orderId}`,
     html: `
-      <h2>New Order</h2>
-      <p><strong>Pickup:</strong> ${order.pickupAddress}</p>
-      <p><strong>Delivery:</strong> ${order.deliveryAddress}</p>
-      <p><strong>Fee:</strong> GH₵${order.fee}</p>
+      <h2>🚀 New Order Received</h2>
+      <p><strong>Order Number:</strong> ${order.orderId}</p>
+      <p><strong>Pickup Address:</strong> ${order.pickupAddress}</p>
+      <p><strong>Delivery Address:</strong> ${order.deliveryAddress}</p>
+      <p><strong>Customer Name:</strong> ${order.customerName}</p>
+      <p><strong>Phone:</strong> ${order.customerPhone}</p>
+      <p><strong>Email:</strong> ${order.customerEmail}</p>
+      <p><strong>Delivery Fee:</strong> GH₵${order.deliveryFee}</p>
+      <p><strong>Tip:</strong> GH₵${order.tip || 0}</p>
+      <p><strong>Total:</strong> GH₵${order.total}</p>
       <p><strong>Pickup Code:</strong> ${order.pickupCode}</p>
       <p><strong>Delivery Code:</strong> ${order.deliveryCode}</p>
-    `
+      <hr />
+      <p>You can manually enter this on Shipday if needed.</p>
+    `,
   };
 
   await transporter.sendMail(mailOptions);
-};
+}
 
-// 🚚 Calculate delivery fee
-app.post("/calculate-fee", async (req, res) => {
-  try {
-    const { pickupAddress, deliveryAddress } = req.body;
-    if (!pickupAddress || !deliveryAddress) {
-      return res.status(400).json({ error: "Missing addresses." });
-    }
+// Delivery fee calculation endpoint (keep your existing code here)...
 
-    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(
-      pickupAddress
-    )}&destinations=${encodeURIComponent(
-      deliveryAddress
-    )}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
-
-    const response = await fetch(url);
-    const data = await response.json();
-
-    console.log("Distance Matrix response:", data); // 👈 Log API response
-
-    if (
-      data.status !== "OK" ||
-      !data.rows?.[0]?.elements?.[0]?.distance?.value
-    ) {
-      return res.status(400).json({ error: "Unable to calculate distance." });
-    }
-
-    const distanceInMeters = data.rows[0].elements[0].distance.value;
-    const distanceInKm = distanceInMeters / 1000;
-
-    // Fee logic
-    let fee = 18;
-    if (distanceInKm > 3 && distanceInKm <= 4.5) {
-      fee = 22;
-    } else if (distanceInKm > 4.5) {
-      const extraDistance = distanceInKm - 4.5;
-      const extraUnits = Math.ceil(extraDistance / 2);
-      fee = 22 + extraUnits * 4;
-    }
-
-    res.json({ distanceInKm: distanceInKm.toFixed(2), fee });
-  } catch (error) {
-    console.error("Fee calculation error:", error); // 👈 Log full error
-    res.status(500).json({ error: "Internal error." });
-  }
-});
-
-
-// 🚀 Submit order to Shipday + Save locally
-app.post("/submit-order", async (req, res) => {
+// Submit order endpoint (merged with your initial code):
+app.post('/submit-order', async (req, res) => {
   const order = req.body;
 
+  // Generate unique IDs and codes
   const orderId = uuidv4();
   const pickupCode = Math.floor(100000 + Math.random() * 900000).toString();
   const deliveryCode = Math.floor(100000 + Math.random() * 900000).toString();
 
+  // Assemble full order data
   const orderData = {
     ...order,
     orderId,
     pickupCode,
     deliveryCode,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
 
-  // Save in-memory
+  // Save order in-memory
   orders[orderId] = orderData;
 
-  // 🌐 Submit to Shipday
   try {
-    const shipdayResponse = await fetch('https://api.shipday.com/v1/dispatch/order', {
+    // Send to Shipday API
+    const response = await fetch('https://api.shipday.com/orders', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': SHIPDAY_API_KEY
+        'Authorization': API-`Key ${SHIPDAY_API_KEY}`,
       },
       body: JSON.stringify({
         restaurant: {
-          name: "SeeYouSoon Courier",
-          address: order.pickupAddress,
-          phoneNumber: order.pickupPhone
+          id: process.env.SHIPDAY_BUSINESS_ID,
         },
-        customer: {
-          name: order.deliveryName,
-          address: order.deliveryAddress,
-          phoneNumber: order.deliveryPhone,
-          email: order.deliveryEmail
-        },
+        pickupAddress: order.pickupAddress,
+        deliveryAddress: order.deliveryAddress,
+        customerName: order.customerName,
+        customerPhoneNumber: order.customerPhone,
+        customerEmail: order.customerEmail,
         orderNumber: orderId,
-        deliveryFee: order.fee,
+        price: order.total,
         tip: order.tip || 0,
-        items: [
-          { name: order.description || "Delivery Item", quantity: 1 }
-        ],
-        instructions: `Pickup Code: ${pickupCode}, Delivery Code: ${deliveryCode}`
-      })
-    });
+        notes: `Pickup Code: ${pickupCode}, Delivery Code: ${deliveryCode}`,
+      }),
+      });
 
-    const shipdayResult = await shipdayResponse.json();
-    console.log("Shipday Response:", shipdayResult);
+    const shipdayResult = await response.json();
+    console.log('✅ Shipday response:', shipdayResult);
 
-    // ✉️ Send email notification
+    // Send notification email
     await sendOrderEmail(orderData);
 
+    // Respond success
     res.json({
       success: true,
       orderId,
-      fee: order.fee,
       pickupCode,
-      deliveryCode
+      deliveryCode,
+      fee: order.deliveryFee,
+      tip: order.tip || 0,
+      total: order.total,
     });
   } catch (error) {
-    console.error("Shipday error:", error);
-    res.status(500).json({ error: "Failed to submit order to Shipday" });
+    console.error('❌ Submit order error:', error);
+    res.status(500).json({ error: 'Failed to submit order' });
   }
 });
 
-// 🔐 Verify one-time codes
-app.post("/verify-code", (req, res) => {
-  const { orderId, code } = req.body;
-  const order = orders[orderId];
+// Verification endpoint and server start as before...
 
-  if (!order) {
-    return res.status(404).json({ valid: false, message: "Order not found" });
-  }
-
-  if (code === order.pickupCode || code === order.deliveryCode) {
-    // Invalidate the code to prevent reuse
-    if (code === order.pickupCode) delete order.pickupCode;
-    if (code === order.deliveryCode) delete order.deliveryCode;
-    return res.json({ valid: true });
-  }
-
-  return res.json({ valid: false, message: "Invalid code" });
-});
-
-// ✅ Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server is running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
