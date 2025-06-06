@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+const GOOGLE_MAPS_API_KEY = process.env.VITE_GOOGLE_MAPS_API_KEY;
 const SHIPDAY_API_KEY = process.env.SHIPDAY_API_KEY;
 const EMAIL_RECEIVER = process.env.EMAIL_RECEIVER; // your email
 const EMAIL_SENDER = process.env.EMAIL_SENDER;     // send from here via nodemailer (optional)
