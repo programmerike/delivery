@@ -51,49 +51,50 @@ const sendOrderEmail = async (order) => {
 
 // 🚚 Calculate delivery fee
 app.post("/calculate-fee", async (req, res) => {
-  const { pickupAddress, deliveryAddress } = req.body;
-  console.log("Received addresses:", pickupAddress, deliveryAddress);
-
   try {
-    const formattedPickup = `${pickupAddress}, Ghana`;
-    const formattedDelivery = `${deliveryAddress}, Ghana`;
+    const { pickupAddress, deliveryAddress } = req.body;
+    if (!pickupAddress || !deliveryAddress) {
+      return res.status(400).json({ error: "Missing addresses." });
+    }
 
-    const response = await fetch(
-      `https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=${encodeURIComponent(
-        formattedPickup
-      )}&destinations=${encodeURIComponent(
-        formattedDelivery
-      )}&key=${VITE_GOOGLE_MAPS_API_KEY}`
-    );
+    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(
+      pickupAddress
+    )}&destinations=${encodeURIComponent(
+      deliveryAddress
+    )}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
 
+    const response = await fetch(url);
     const data = await response.json();
-    console.log("Google API Response:", data);
+
+    console.log("Distance Matrix response:", data); // 👈 Log API response
 
     if (
-      data.status === "OK" &&
-      data.rows[0].elements[0].status === "OK"
+      data.status !== "OK" ||
+      !data.rows?.[0]?.elements?.[0]?.distance?.value
     ) {
-      const distanceInMeters = data.rows[0].elements[0].distance.value;
-      const distanceInKm = distanceInMeters / 1000;
-
-      let fee;
-      if (distanceInKm <= 3) {
-        fee = 18;
-      } else if (distanceInKm <= 4.5) {
-        fee = 22;
-      } else {
-        fee = 22 + Math.ceil((distanceInKm - 4.5) / 2) * 4;
-      }
-
-      return res.json({ fee, distance: distanceInKm.toFixed(2) });
-    } else {
       return res.status(400).json({ error: "Unable to calculate distance." });
     }
+
+    const distanceInMeters = data.rows[0].elements[0].distance.value;
+    const distanceInKm = distanceInMeters / 1000;
+
+    // Fee logic
+    let fee = 18;
+    if (distanceInKm > 3 && distanceInKm <= 4.5) {
+      fee = 22;
+    } else if (distanceInKm > 4.5) {
+      const extraDistance = distanceInKm - 4.5;
+      const extraUnits = Math.ceil(extraDistance / 2);
+      fee = 22 + extraUnits * 4;
+    }
+
+    res.json({ distanceInKm: distanceInKm.toFixed(2), fee });
   } catch (error) {
-    console.error("Fee calculation error:", error);
+    console.error("Fee calculation error:", error); // 👈 Log full error
     res.status(500).json({ error: "Internal error." });
   }
 });
+
 
 // 🚀 Submit order to Shipday + Save locally
 app.post("/submit-order", async (req, res) => {
