@@ -77,6 +77,8 @@ app.post('/submit-order', async (req, res) => {
   };
 
   orders[orderId] = orderData;
+  console.log('📧 Sending email for order:', orderData);
+await sendOrderEmail(orderData);
 
   try {
     // Send to Shipday
