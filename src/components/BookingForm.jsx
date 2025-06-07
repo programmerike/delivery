@@ -74,7 +74,7 @@ function BookingForm() {
 
     setLoadingFee(true);
     try {
-      const response = await fetch('http://localhost:5000/api/submit-delivery', {
+      const response = await fetch('http://localhost:5000/api/submit-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pickupAddress, deliveryAddress}),
