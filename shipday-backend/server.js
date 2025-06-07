@@ -33,7 +33,7 @@ const transporter = nodemailer.createTransport({
 // Send order email function
 async function sendOrderEmail(order) {
   const mailOptions = {
-    from: `"SeeYouSoon Courier" <${EMAIL_SENDER}>`,
+    from: `"SeeYouSoon Deliveries" <${EMAIL_SENDER}>`,
     to: EMAIL_RECEIVER,
     subject: `📬 New Delivery Order #${order.orderId}`,
     html: `

@@ -92,23 +92,22 @@ export default function DeliveryForm() {
     const pickupCode = Math.floor(1000 + Math.random() * 9000);
     const deliveryCode = Math.floor(1000 + Math.random() * 9000);
 
-    navigate("/thank-you", {
-      state: {
-        orderNumber,
-        pickupAddress,
-        deliveryAddress,
-        distance,
-        deliveryFee: fee,
-        tip,
-        total,
-        pickupCode,
-        deliveryCode,
-        customerName,
-        customerPhone,
-        customerEmail,
-      },
-    });
-  };
+    navigate('/thank-you', {
+  state: {
+    orderData: {
+      name: customerName,
+      phone,
+      email,
+      pickupAddress,
+      deliveryAddress,
+      deliveryFee,
+      totalAmount,
+      tip,
+      pickupCode,
+      deliveryCode,
+    },
+  },
+});
 
   return (
     <form id="delivery-form" onSubmit={handleSubmit}>
@@ -236,5 +235,4 @@ export default function DeliveryForm() {
     </form>
   );
 }
-
-
+}

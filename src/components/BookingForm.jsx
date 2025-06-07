@@ -77,12 +77,12 @@ function BookingForm() {
       const response = await fetch('http://localhost:5000/api/submit-delivery', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pickupAddress: pickup, deliveryAddress: delivery }),
+        body: JSON.stringify({ pickupAddress, deliveryAddress}),
       });
       if (!response.ok) throw new Error('Failed to get fee');
       const data = await response.json();
       setDistance(data.distance);
-      setDeliveryFee(data.deliveryFee);
+      setDeliveryFee(data.fee);
     } catch (err) {
       setError('Error calculating delivery fee. Please try again.');
       setDistance(null);
