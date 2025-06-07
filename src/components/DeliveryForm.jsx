@@ -92,22 +92,23 @@ export default function DeliveryForm() {
     const pickupCode = Math.floor(1000 + Math.random() * 9000);
     const deliveryCode = Math.floor(1000 + Math.random() * 9000);
 
-    navigate('/thank-you', {
-  state: {
-    orderData: {
-      name: customerName,
-      phone,
-      email,
-      pickupAddress,
-      deliveryAddress,
-      deliveryFee,
-      totalAmount,
-      tip,
-      pickupCode,
-      deliveryCode,
-    },
-  },
-});
+    navigate("/thank-you", {
+      state: {
+        orderNumber,
+        pickupAddress,
+        deliveryAddress,
+        distance,
+        deliveryFee: fee,
+        tip,
+        total,
+        pickupCode,
+        deliveryCode,
+        customerName,
+        customerPhone,
+        customerEmail,
+      },
+    });
+  };
 
   return (
     <form id="delivery-form" onSubmit={handleSubmit}>
@@ -120,7 +121,7 @@ export default function DeliveryForm() {
           placeholder="📍 Store Address"
           required
           ref={pickupInputRef}
-          onChange={(e) => setPickupAddress(e.target.value)}
+          defaultValue={pickupAddress}
           className="fancy-input"
         />
         <input type="time" defaultValue="11:10" />
@@ -154,11 +155,11 @@ export default function DeliveryForm() {
           placeholder="📍 Delivery Address"
           required
           ref={deliveryInputRef}
-          onChange={(e) => setDeliveryAddress(e.target.value)}
+          defaultValue={deliveryAddress}
           className="fancy-input"
         />
         <input type="date" defaultValue="2025-05-30" />
-        <input type="time" defaultValue="11:50" />
+        
       </fieldset>
 
       <fieldset>
@@ -235,4 +236,5 @@ export default function DeliveryForm() {
     </form>
   );
 }
-}
+
+
