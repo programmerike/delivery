@@ -124,26 +124,21 @@ app.post('/submit-order', async (req, res) => {
 });
 
 // ✅ Test email route
-app.get('/send-test-email', async (req, res) => {
+app.get('/test-email', async (req, res) => {
   try {
-    const mailOptions = {
-      from: `"SeeYouSoon Deliveries" <${EMAIL_SENDER}>`,
+    await transporter.sendMail({
+      from: `"SeeYouSoon Courier" <${EMAIL_SENDER}>`,
       to: EMAIL_RECEIVER,
-      subject: '📬 Test Email from SeeYouSoon Courier',
-      html: `
-        <h2>✅ Test Email</h2>
-        <p>This is a test email to confirm your Nodemailer setup is working.</p><p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
-      `,
-    };
-
-    await transporter.sendMail(mailOptions);
-    console.log('✅ Test email sent!');
-    res.send('✅ Test email sent successfully!');
+      subject: '🚀 Test Email from Production',
+      html: `<p>This is a live test email sent at ${new Date().toLocaleString()}</p>`,
+    });
+    res.send('✅ Test email sent from production');
   } catch (error) {
-    console.error('❌ Failed to send test email:', error);
-    res.status(500).send('❌ Failed to send test email.');
+    console.error('❌ Email error:', error);
+    res.status(500).send('❌ Failed to send email');
   }
 });
+
 
 // Start server
 app.listen(PORT, () => {
