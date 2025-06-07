@@ -123,21 +123,7 @@ app.post('/submit-order', async (req, res) => {
   }
 });
 
-// ✅ Test email route
-app.get('/test-email', async (req, res) => {
-  try {
-    await transporter.sendMail({
-      from: `"SeeYouSoon Courier" <${EMAIL_SENDER}>`,
-      to: EMAIL_RECEIVER,
-      subject: '🚀 Test Email from Production',
-      html: `<p>This is a live test email sent at ${new Date().toLocaleString()}</p>`,
-    });
-    res.send('✅ Test email sent from production');
-  } catch (error) {
-    console.error('❌ Email error:', error);
-    res.status(500).send('❌ Failed to send email');
-  }
-});
+
 
 
 // Start server
