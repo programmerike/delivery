@@ -10,7 +10,12 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(cors({
+    origin: `https://seeyousoondeliveries.com`,
+    methods: ['POST', 'GET'],
+    credentials: true
+}
+));
 app.use(express.json());
 
 const {
@@ -102,7 +107,7 @@ app.post('/submit-order', async (req, res) => {
       instructions: `Pickup Code: ${pickupCode}, Delivery Code: ${deliveryCode}`,
     };
 
-    const shipdayResponse = await fetch('https://api.shipday.com/submit-orders', {
+    const shipdayResponse = await fetch('https://api.shipday.com/orders', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
