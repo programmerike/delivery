@@ -72,29 +72,34 @@ async function sendOrderEmail(order) {
 }
 
 // Delivery fee calculation function
-async function calculateDeliveryFee(pickup, delivery) {
-  const matrixURL = `https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=${encodeURIComponent(pickup)}&destinations=${encodeURIComponent(delivery)}&key=${GOOGLE_MAPS_API_KEY}`;
+async function calculateDeliveryFee(pickupAddress, deliveryAddress) {
+  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(pickupAddress)}&destinations=${encodeURIComponent(deliveryAddress)}&key=${GOOGLE_MAPS_API_KEY}`;
 
-  const response = await fetch(matrixURL);
+  const response = await fetch(url);
   const data = await response.json();
 
-  const element = data.rows[0].elements[0];
-  if (element.status !== 'OK') {
-    throw new Error('Google Maps distance calculation failed');
+  console.log('Distance Matrix API response:', JSON.stringify(data, null, 2));
+
+  if (
+    !data.rows ||
+    !data.rows[0] ||
+    !data.rows[0].elements ||
+    !data.rows[0].elements[0] ||
+    data.rows[0].elements[0].status !== 'OK'
+  ) {
+    throw new Error('Invalid response from Google Distance Matrix API');
   }
 
-  const distanceKm = element.distance.value / 1000;
-  let fee;
+  const distanceMeters = data.rows[0].elements[0].distance.value;
+  const distanceKm = distanceMeters / 1000;
 
-  if (distanceKm <= 3) {
-    fee = 18;
-  } else if (distanceKm <= 4.5) {
-    fee = 22;
-  } else {
-    const extraKm = distanceKm - 4.5;
-    const extraFee = Math.ceil(extraKm / 2) * 4;
-    fee = 22 + extraFee;
-  }
+  // Fee calculation logic
+  if (distanceKm <= 3) return 18;
+  if (distanceKm <= 4.5) return 22;
+  const extraDistance = distanceKm - 4.5;
+  const extraFee = Math.ceil(extraDistance / 2) * 4;
+  return 22 + extraFee;
+
 
   return { distance: distanceKm.toFixed(2), fee };
 }
