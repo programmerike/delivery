@@ -18,10 +18,11 @@ const SHIPDAY_API_KEY = process.env.SHIPDAY_API_KEY;
 const EMAIL_RECEIVER = process.env.EMAIL_RECEIVER;
 const EMAIL_SENDER = process.env.EMAIL_SENDER;
 const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD;
+const SHIPDAY_BUSINESS_ID = process.env.SHIPDAY_BUSINESS_ID;
 
-const orders = {}; // In-memory orders store
+const orders = {}; // In-memory storage (consider replacing with a real DB later)
 
-// Nodemailer transporter setup
+// Nodemailer setup
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -30,10 +31,10 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Send order email function
+// Email order confirmation to admin/you
 async function sendOrderEmail(order) {
   const mailOptions = {
-    from: `"SeeYouSoon Deliveris" <${EMAIL_SENDER}>`,
+    from: `"SeeYouSoon Deliveries" <${EMAIL_SENDER}>`,
     to: EMAIL_RECEIVER,
     subject: `📬 New Delivery Order #${order.orderId}`,
     html: `
@@ -57,11 +58,10 @@ async function sendOrderEmail(order) {
   await transporter.sendMail(mailOptions);
 }
 
-// Submit order endpoint
+// Endpoint to handle delivery order submission
 app.post('/submit-order', async (req, res) => {
   const order = req.body;
 
-  // Generate unique order ID and verification codes
   const orderId = uuidv4();
   const pickupCode = Math.floor(100000 + Math.random() * 900000).toString();
   const deliveryCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -85,9 +85,7 @@ app.post('/submit-order', async (req, res) => {
         'Authorization': `API-KEY ${SHIPDAY_API_KEY}`,
       },
       body: JSON.stringify({
-        restaurant: {
-          id: process.env.SHIPDAY_BUSINESS_ID,
-        },
+        restaurant: { id: SHIPDAY_BUSINESS_ID },
         pickupAddress: order.pickupAddress,
         deliveryAddress: order.deliveryAddress,
         customerName: order.customerName,
@@ -103,7 +101,7 @@ app.post('/submit-order', async (req, res) => {
     const shipdayResult = await response.json();
     console.log('✅ Shipday response:', shipdayResult);
 
-    // Send email to admin or recipient
+    // Send email notification
     await sendOrderEmail(orderData);
 
     res.json({
@@ -121,7 +119,12 @@ app.post('/submit-order', async (req, res) => {
   }
 });
 
-// Start server
+// Optional: Health check
+app.get('/', (req, res) => {
+  res.send('🚚 SeeYouSoon Courier Backend is running!');
+});
+
+// Start the server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
