@@ -22,7 +22,6 @@ const {
   EMAIL_PASSWORD,
 } = process.env;
 
-// Log env setup once
 console.log('✅ Environment setup complete');
 
 const orders = {}; // Optional: in-memory store
@@ -88,32 +87,45 @@ app.post('/submit-order', async (req, res) => {
   orders[orderId] = orderData;
 
   try {
-    // Send email
+    // Send email notification
     await sendOrderEmail(orderData);
 
-    // Send to Shipday
-    const response = await fetch('https://api.shipday.com/orders', {
+    // Prepare Shipday payload
+    const shipdayPayload = {
+      businessId: SHIPDAY_BUSINESS_ID,
+      pickupAddress: order.pickupAddress,
+      deliveryAddress: order.deliveryAddress,
+      customerName: order.customerName,
+      customerPhoneNumber: order.customerPhone,
+      customerEmail: order.customerEmail,
+      orderNumber: orderId,
+      instructions: `Pickup Code: ${pickupCode}, Delivery Code: ${deliveryCode}`,
+    };
+
+    const shipdayResponse = await fetch('https://api.shipday.com/orders', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `API-KEY ${SHIPDAY_API_KEY}`,
+        Authorization: `Bearer ${SHIPDAY_API_KEY}`,
       },
-      body: JSON.stringify({
-        restaurant: { id: SHIPDAY_BUSINESS_ID },
-        pickupAddress: order.pickupAddress,
-        deliveryAddress: order.deliveryAddress,
-        customerName: order.customerName,
-        customerPhoneNumber: order.customerPhone,
-        customerEmail: order.customerEmail,
-        orderNumber: orderId,
-        price: order.total,
-        tip: order.tip || 0,
-        notes: `Pickup Code: ${pickupCode}, Delivery Code: ${deliveryCode}`,
-      }),
+      body: JSON.stringify(shipdayPayload),
     });
 
-    const shipdayResult = await response.json();
-    console.log('✅ Shipday API response:', shipdayResult);
+    const responseText = await shipdayResponse.text();
+    console.log('Shipday status:', shipdayResponse.status);
+    console.log('Shipday response:', responseText);
+
+    if (!shipdayResponse.ok) {
+      return res.status(500).json({ error: 'Shipday API error', details: responseText });
+    }
+
+    let shipdayData;
+    try {
+      shipdayData = JSON.parse(responseText);
+    } catch (err) {
+      console.error('❌ Failed to parse Shipday response:', err.message);
+      return res.status(500).json({ error: 'Invalid response from Shipday' });
+    }
 
     res.json({
       success: true,
@@ -123,6 +135,7 @@ app.post('/submit-order', async (req, res) => {
       fee: order.deliveryFee,
       tip: order.tip || 0,
       total: order.total,
+      shipday: shipdayData,
     });
   } catch (error) {
     console.error('❌ Error submitting order:', error);
@@ -130,7 +143,12 @@ app.post('/submit-order', async (req, res) => {
   }
 });
 
-// Start server
+// Root test route
+app.get('/', (req, res) => {
+  res.send('Hello from SeeYouSoon backend!');
+});
+
+// Start the server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
