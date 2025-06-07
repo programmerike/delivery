@@ -121,7 +121,7 @@ export default function DeliveryForm() {
           placeholder="📍 Store Address"
           required
           ref={pickupInputRef}
-          defaultValue={pickupAddress}
+          onChange={(e) => setPickupAddress(e.target.value)}
           className="fancy-input"
         />
         <input type="time" defaultValue="11:10" />
@@ -155,7 +155,7 @@ export default function DeliveryForm() {
           placeholder="📍 Delivery Address"
           required
           ref={deliveryInputRef}
-          defaultValue={deliveryAddress}
+          onChange={(e) => setDeliveryAddress(e.target.value)}
           className="fancy-input"
         />
         <input type="date" defaultValue="2025-05-30" />

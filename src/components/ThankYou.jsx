@@ -4,8 +4,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/thankyou.css";
 
 const ThankYouPage = () => {
+  const navigate = useNavigate();
   const location = useLocation();
-  const { state } = location || {};
+  const { state } = location ;
   const {
     orderNumber,
     pickupAddress,

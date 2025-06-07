@@ -15,9 +15,9 @@ app.use(express.json());
 
 const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 const SHIPDAY_API_KEY = process.env.SHIPDAY_API_KEY;
-const EMAIL_RECEIVER = process.env.EMAIL_RECEIVER;   // your notification email
-const EMAIL_SENDER = process.env.EMAIL_SENDER;       // your Gmail user for nodemailer
-const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD;   // your Gmail app password
+const EMAIL_RECEIVER = process.env.EMAIL_RECEIVER;
+const EMAIL_SENDER = process.env.EMAIL_SENDER;
+const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD;
 
 const orders = {}; // In-memory orders store
 
@@ -57,18 +57,15 @@ async function sendOrderEmail(order) {
   await transporter.sendMail(mailOptions);
 }
 
-// Delivery fee calculation endpoint (keep your existing code here)...
-
-// Submit order endpoint (merged with your initial code):
+// Submit order endpoint
 app.post('/submit-order', async (req, res) => {
   const order = req.body;
 
-  // Generate unique IDs and codes
+  // Generate unique order ID and verification codes
   const orderId = uuidv4();
   const pickupCode = Math.floor(100000 + Math.random() * 900000).toString();
   const deliveryCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-  // Assemble full order data
   const orderData = {
     ...order,
     orderId,
@@ -77,16 +74,15 @@ app.post('/submit-order', async (req, res) => {
     createdAt: new Date().toISOString(),
   };
 
-  // Save order in-memory
   orders[orderId] = orderData;
 
   try {
-    // Send to Shipday API
+    // Send to Shipday
     const response = await fetch('https://api.shipday.com/orders', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': API-`Key ${SHIPDAY_API_KEY}`,
+        'Authorization': `API-KEY ${SHIPDAY_API_KEY}`,
       },
       body: JSON.stringify({
         restaurant: {
@@ -102,15 +98,14 @@ app.post('/submit-order', async (req, res) => {
         tip: order.tip || 0,
         notes: `Pickup Code: ${pickupCode}, Delivery Code: ${deliveryCode}`,
       }),
-      });
+    });
 
     const shipdayResult = await response.json();
     console.log('✅ Shipday response:', shipdayResult);
 
-    // Send notification email
+    // Send email to admin or recipient
     await sendOrderEmail(orderData);
 
-    // Respond success
     res.json({
       success: true,
       orderId,
@@ -126,8 +121,7 @@ app.post('/submit-order', async (req, res) => {
   }
 });
 
-// Verification endpoint and server start as before...
-
+// Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
