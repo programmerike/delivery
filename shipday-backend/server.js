@@ -13,26 +13,30 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
-const SHIPDAY_API_KEY = process.env.SHIPDAY_API_KEY;
-const EMAIL_RECEIVER = process.env.EMAIL_RECEIVER;
-const EMAIL_SENDER = process.env.EMAIL_SENDER;
-const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD;
+const {
+  GOOGLE_MAPS_API_KEY,
+  SHIPDAY_API_KEY,
+  SHIPDAY_BUSINESS_ID,
+  EMAIL_RECEIVER,
+  EMAIL_SENDER,
+  EMAIL_PASSWORD,
+} = process.env;
 
-const orders = {}; // In-memory orders store
+// Log env setup once
+console.log('✅ Environment setup complete');
 
-// Nodemailer transporter setup
+const orders = {}; // Optional: in-memory store
+
+// Nodemailer setup
 const transporter = nodemailer.createTransport({
   service: 'gmail',
-  port: 465,
-  secure: true, // use SSL
   auth: {
     user: EMAIL_SENDER,
     pass: EMAIL_PASSWORD,
   },
 });
 
-// Send order email function
+// Email sender
 async function sendOrderEmail(order) {
   const mailOptions = {
     from: `"SeeYouSoon Deliveries" <${EMAIL_SENDER}>`,
@@ -56,14 +60,19 @@ async function sendOrderEmail(order) {
     `,
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('✅ Email sent for order:', order.orderId);
+  } catch (error) {
+    console.error('❌ Failed to send email:', error);
+  }
 }
 
-// Submit order endpoint
+// Submit order route
 app.post('/submit-order', async (req, res) => {
   const order = req.body;
+  console.log('📦 Received order:', order);
 
-  // Generate unique order ID and verification codes
   const orderId = uuidv4();
   const pickupCode = Math.floor(100000 + Math.random() * 900000).toString();
   const deliveryCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -77,21 +86,20 @@ app.post('/submit-order', async (req, res) => {
   };
 
   orders[orderId] = orderData;
-  console.log('📧 Sending email for order:', orderData);
-await sendOrderEmail(orderData);
 
   try {
+    // Send email
+    await sendOrderEmail(orderData);
+
     // Send to Shipday
     const response = await fetch('https://api.shipday.com/orders', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `API-KEY ${SHIPDAY_API_KEY}`,
+        Authorization: `API-KEY ${SHIPDAY_API_KEY}`,
       },
       body: JSON.stringify({
-        restaurant: {
-          id: process.env.SHIPDAY_BUSINESS_ID,
-        },
+        restaurant: { id: SHIPDAY_BUSINESS_ID },
         pickupAddress: order.pickupAddress,
         deliveryAddress: order.deliveryAddress,
         customerName: order.customerName,
@@ -105,10 +113,7 @@ await sendOrderEmail(orderData);
     });
 
     const shipdayResult = await response.json();
-    console.log('✅ Shipday response:', shipdayResult);
-
-    // Send confirmation email
-    await sendOrderEmail(orderData);
+    console.log('✅ Shipday API response:', shipdayResult);
 
     res.json({
       success: true,
@@ -120,13 +125,10 @@ await sendOrderEmail(orderData);
       total: order.total,
     });
   } catch (error) {
-    console.error('❌ Submit order error:', error);
+    console.error('❌ Error submitting order:', error);
     res.status(500).json({ error: 'Failed to submit order' });
   }
 });
-
-
-
 
 // Start server
 app.listen(PORT, () => {
