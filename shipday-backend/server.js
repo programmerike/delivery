@@ -102,7 +102,7 @@ app.post('/submit-order', async (req, res) => {
       instructions: `Pickup Code: ${pickupCode}, Delivery Code: ${deliveryCode}`,
     };
 
-    const shipdayResponse = await fetch('https://api.shipday.com/orders', {
+    const shipdayResponse = await fetch('https://api.shipday.com/submit-orders', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
