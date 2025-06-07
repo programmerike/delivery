@@ -11,11 +11,10 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-    origin: `https://seeyousoondeliveries.com`,
-    methods: ['POST', 'GET'],
-    credentials: true
-}
-));
+  origin: 'https://seeyousoondeliveries.com',
+  methods: ['POST', 'GET'],
+  credentials: true
+}));
 app.use(express.json());
 
 const {
@@ -29,9 +28,9 @@ const {
 
 console.log('✅ Environment setup complete');
 
-const orders = {}; // Optional: in-memory store
+const orders = {}; // In-memory storage for orders
 
-// Nodemailer setup
+// Nodemailer transporter setup
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -40,12 +39,12 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Email sender
+// Email sender function
 async function sendOrderEmail(order) {
   const mailOptions = {
     from: `"SeeYouSoon Deliveries" <${EMAIL_SENDER}>`,
-    to: EMAIL_RECEIVER,
-    subject: `📬 New Delivery Order #${order.orderId}`,
+    to: order.customerEmail || EMAIL_RECEIVER,
+    subject: `📬 Order Confirmation #${order.orderId}`,
     html: `
       <h2>🚀 New Order Received</h2>
       <p><strong>Order Number:</strong> ${order.orderId}</p>
@@ -53,7 +52,7 @@ async function sendOrderEmail(order) {
       <p><strong>Delivery Address:</strong> ${order.deliveryAddress}</p>
       <p><strong>Customer Name:</strong> ${order.customerName}</p>
       <p><strong>Phone:</strong> ${order.customerPhone}</p>
-      <p><strong>Email:</strong> ${order.customerEmail}</p>
+      <p><strong>Email:</strong> ${order.customerEmail || 'Not provided'}</p>
       <p><strong>Delivery Fee:</strong> GH₵${order.deliveryFee}</p>
       <p><strong>Tip:</strong> GH₵${order.tip || 0}</p>
       <p><strong>Total:</strong> GH₵${order.total}</p>
@@ -72,42 +71,97 @@ async function sendOrderEmail(order) {
   }
 }
 
-// Submit order route
+// Delivery fee calculation function
+async function calculateDeliveryFee(pickup, delivery) {
+  const matrixURL = `https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=${encodeURIComponent(pickup)}&destinations=${encodeURIComponent(delivery)}&key=${GOOGLE_MAPS_API_KEY}`;
+
+  const response = await fetch(matrixURL);
+  const data = await response.json();
+
+  const element = data.rows[0].elements[0];
+  if (element.status !== 'OK') {
+    throw new Error('Google Maps distance calculation failed');
+  }
+
+  const distanceKm = element.distance.value / 1000;
+  let fee;
+
+  if (distanceKm <= 3) {
+    fee = 18;
+  } else if (distanceKm <= 4.5) {
+    fee = 22;
+  } else {
+    const extraKm = distanceKm - 4.5;
+    const extraFee = Math.ceil(extraKm / 2) * 4;
+    fee = 22 + extraFee;
+  }
+
+  return { distance: distanceKm.toFixed(2), fee };
+}
+
+// Main route to handle order submission
 app.post('/submit-order', async (req, res) => {
-  const order = req.body;
-  console.log('📦 Received order:', order);
-
-  const orderId = uuidv4();
-  const pickupCode = Math.floor(100000 + Math.random() * 900000).toString();
-  const deliveryCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-  const orderData = {
-    ...order,
-    orderId,
-    pickupCode,
-    deliveryCode,
-    createdAt: new Date().toISOString(),
-  };
-
-  orders[orderId] = orderData;
-
   try {
-    // Send email notification
-    await sendOrderEmail(orderData);
+    const {
+      pickupAddress,
+      deliveryAddress,
+      customerName,
+      deliveryPhone,
+      email,
+      tips,
+      itemName,
+      instructions,
+      paymentMethod
+    } = req.body;
 
-    // Prepare Shipday payload
-    const shipdayPayload = {
-      businessId: SHIPDAY_BUSINESS_ID,
-      pickupAddress: order.pickupAddress,
-      deliveryAddress: order.deliveryAddress,
-      customerName: order.customerName,
-      customerPhoneNumber: order.customerPhone,
-      customerEmail: order.customerEmail,
-      orderNumber: orderId,
-      instructions: `Pickup Code: ${pickupCode}, Delivery Code: ${deliveryCode}`,
+    // 1. Calculate distance and fee
+    const { distance, fee } = await calculateDeliveryFee(pickupAddress, deliveryAddress);
+
+    // 2. Generate codes and ID
+    const orderId = uuidv4();
+    const pickupCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const deliveryCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const tip = Number(tips || 0);
+    const total = fee + tip;
+
+    const order = {
+      orderId,
+      pickupAddress,
+      deliveryAddress,
+      customerName,
+      customerPhone: deliveryPhone,
+      customerEmail: email,
+      deliveryFee: fee,
+      tip,
+      total,
+      itemName,
+      paymentMethod,
+      instructions,
+      pickupCode,
+      deliveryCode,
+      distance,
+      createdAt: new Date().toISOString()
     };
 
-    const shipdayResponse = await fetch('https://api.shipday.com/orders', {
+    // 3.Store in-memory (or database later)
+    orders[orderId] = order;
+
+    // 4. Send email
+    await sendOrderEmail(order);
+
+    // 5. Send to Shipday
+    const shipdayPayload = {
+      businessId: SHIPDAY_BUSINESS_ID,
+      pickupAddress,
+      deliveryAddress,
+      customerName,
+      customerPhoneNumber: deliveryPhone,
+      customerEmail: email,
+      orderNumber: orderId,
+      instructions: `Pickup Code: ${pickupCode}, Delivery Code: ${deliveryCode}`
+    };
+
+    const shipdayRes = await fetch('https://api.shipday.com/orders', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -116,44 +170,37 @@ app.post('/submit-order', async (req, res) => {
       body: JSON.stringify(shipdayPayload),
     });
 
-    const responseText = await shipdayResponse.text();
-    console.log('Shipday status:', shipdayResponse.status);
-    console.log('Shipday response:', responseText);
-
-    if (!shipdayResponse.ok) {
-      return res.status(500).json({ error: 'Shipday API error', details: responseText });
-    }
-
-    let shipdayData;
+    const shipdayResponseText = await shipdayRes.text();
+    let shipdayResponse;
     try {
-      shipdayData = JSON.parse(responseText);
+      shipdayResponse = JSON.parse(shipdayResponseText);
     } catch (err) {
-      console.error('❌ Failed to parse Shipday response:', err.message);
-      return res.status(500).json({ error: 'Invalid response from Shipday' });
+      console.warn('⚠️ Could not parse Shipday response as JSON');
     }
 
+    // 6. Respond to frontend
     res.json({
       success: true,
       orderId,
       pickupCode,
       deliveryCode,
-      fee: order.deliveryFee,
-      tip: order.tip || 0,
-      total: order.total,
-      shipday: shipdayData,
+      distance,
+      fee,
+      tip,
+      total,
+      shipday: shipdayResponse || shipdayResponseText
     });
-  } catch (error) {
-    console.error('❌ Error submitting order:', error);
+  } catch (err) {
+    console.error('❌ Order submission error:', err);
     res.status(500).json({ error: 'Failed to submit order' });
   }
 });
 
-// Root test route
+// Test route
 app.get('/', (req, res) => {
   res.send('Hello from SeeYouSoon backend!');
 });
 
-// Start the server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
