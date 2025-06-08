@@ -34,8 +34,8 @@ const orders = {}; // In-memory storage for orders
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: EMAIL_SENDER,
-    pass: EMAIL_PASSWORD,
+    user: process.env.EMAIL_SENDER,
+    pass: process.env.EMAIL_PASSWORD,
   },
 });
 
@@ -44,7 +44,7 @@ async function sendOrderEmail(order) {
     
   const mailOptions = {
     from: `"SeeYouSoon Deliveries" <${EMAIL_SENDER}>`,
-    to: order.customerEmail || EMAIL_RECEIVER,
+    to: order.email,
     subject: `📬 Order Confirmation #${order.orderId}`,
     html: `
       <h2>🚀 New Order Received</h2>
@@ -110,6 +110,7 @@ async function calculateDeliveryFee(pickupAddress, deliveryAddress) {
 
 // Main route to handle order submission
 app.post('/submit-order', async (req, res) => {
+    from: process.env.
     console.log('📦 Form submitted! Body:', req.body);
   try {
     const {

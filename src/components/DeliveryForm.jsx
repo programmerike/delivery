@@ -194,7 +194,7 @@ export default function DeliveryForm() {
         <option value="">💳 Choose a Payment Method</option>
         <option value="cash">💵 Cash on Delivery</option>
         <option value="momo">📱 Mobile Money</option>
-        <option value="card">💳 Credit/Debit Card</option>
+        
       </select>
 
       <button type="submit" className="animated-submit" style={{ marginTop: "1rem" }}>
