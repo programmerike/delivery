@@ -21,7 +21,7 @@ app.post('/api/create-order', async (req, res) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.t7ynNW9trM.vmT5J4UCkHkWlpLjZjZB}`, // Use an actual env var name
+        'Authorization': `Bearer ${process.env.SHIPDAY_API_KEY}`, // Use an actual env var name
       },
       body: JSON.stringify({
         pickupAddress: orderData.pickupAddress,

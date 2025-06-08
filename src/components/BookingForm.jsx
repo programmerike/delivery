@@ -4,7 +4,7 @@ import usePlacesAutocomplete from 'use-places-autocomplete';
 function BookingForm() {
   const [pickupAddress, setPickupAddress] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
-  const [distance, setDistance] = useState("");
+  const [distance, setDistance] = useState(null);
   const [deliveryFee, setDeliveryFee] = useState(0);
   const [loadingFee, setLoadingFee] = useState(false);
   const [error, setError] = useState("");
@@ -54,9 +54,10 @@ function BookingForm() {
 
   const triggerDistanceCalculation = async (pickup, delivery) => {
     setError(null);
+
     if (!pickup || !delivery) {
       setDistance(null);
-      setDeliveryFee(null);
+      setDeliveryFee(0);
       return;
     }
 
@@ -65,16 +66,19 @@ function BookingForm() {
       const response = await fetch('https://delivery-u9ub.onrender.com/calculate-fee', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ formData }),
+        body: JSON.stringify({ pickupAddress: pickup, deliveryAddress: delivery }),
       });
+
       if (!response.ok) throw new Error('Failed to get fee');
+
       const data = await response.json();
+
       setDistance(data.distance);
       setDeliveryFee(data.fee);
     } catch (err) {
       setError('Error calculating delivery fee. Please try again.');
       setDistance(null);
-      setDeliveryFee(null);
+      setDeliveryFee(0);
     } finally {
       setLoadingFee(false);
     }
@@ -106,7 +110,7 @@ function BookingForm() {
       return;
     }
 
-    const formData = {
+    const orderData = {
       orderNumber: form["orderNumber"].value,
       storeName: form["storeName"].value,
       pickupPhone,
@@ -122,15 +126,15 @@ function BookingForm() {
       deliveryFees: deliveryFee,
       tips: tip,
       total,
-      instructions: form["instructions"].value,
-      paymentMethod: form["paymentMethod"].value,
-      email,
+      instructions: form["instructions"] ? form["instructions"].value : "",
+      paymentMethod: form["paymentMethod"] ? form["paymentMethod"].value : "",email,
     };
 
-    try {const res = await fetch(`https://delivery-u9ub.onrender.com/`, {
+    try {
+      const res = await fetch('https://delivery-u9ub.onrender.com/submit-order', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(orderData),
       });
 
       if (res.ok) {
@@ -140,6 +144,7 @@ function BookingForm() {
       }
     } catch (err) {
       alert("Submission error. Please try again.");
+      console.error("Submission error:", err);
     }
   };
 
@@ -210,32 +215,27 @@ function BookingForm() {
         <legend>🧾 Order Details</legend>
         <input type="text" placeholder="🛒 Item Name" name="itemName" />
         <input type="number" placeholder="🚚 Delivery Fees (₵)" name="deliveryFees" value={deliveryFee} readOnly />
-        <input type="number" placeholder="🎁 Tips (₵)" name="tips" value={tip} onChange={(e) => setTip(e.target.value)} />
+        <input
+          type="number"
+          placeholder="🎁 Tips (₵)"
+          name="tips"
+          value={tip}
+          onChange={(e) => setTip(e.target.value)}
+          min="0"
+        />
+        <input type="number" placeholder="💰 Total (₵)" name="total" value={total} readOnly />
+        <textarea placeholder="📝 Special Instructions" name="instructions"></textarea>
 
-        {deliveryFee > 0 && (
-          <div className="fee-summary">
-            <p>Estimated Delivery Fee: <strong>GH₵{deliveryFee.toFixed(2)}</strong></p>
-            <p>Tip: <strong>GH₵{Number(tip).toFixed(2)}</strong></p>
-            <hr />
-            <p className="total">Total: <strong>GH₵{total.toFixed(2)}</strong></p>
-          </div>
-        )}
-
-        <input type="text" name="total" value={`GH₵${total.toFixed(2)}`} readOnly />
+        <select name="paymentMethod" defaultValue="">
+          <option value="" disabled>Select payment method</option>
+          <option value="Cash">Cash</option>
+          <option value="Mobile Money">Mobile Money</option>
+          
+        </select>
       </fieldset>
 
-      <textarea placeholder="🗒 Any fun delivery instructions?" rows={3} name="instructions"></textarea>
-
-      <select required name="paymentMethod">
-        <option value="">💳 Choose a Payment Method</option>
-        <option value="cash">💵 Cash on Delivery</option>
-        <option value="momo">📱 Mobile Money</option></select>
-
-      {loadingFee && <p>Calculating delivery fee...</p>}
-      {distance && <p>Distance: {distance} km — Delivery Fee: ₵{deliveryFee}</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      <button type="submit">🎉 Submit Order</button>
+      {loadingFee && <p>Calculating fee...</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}<button type="submit" disabled={loadingFee}>Submit Order</button>
     </form>
   );
 }
