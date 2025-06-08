@@ -7,10 +7,11 @@ function BookingForm() {
   const [distance, setDistance] = useState(null);
   const [deliveryFee, setDeliveryFee] = useState(0);
   const [loadingFee, setLoadingFee] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [tip, setTip] = useState(0);
 
-  const total = Number(deliveryFee) + Number(tip || 0); // ✅ fixed
+  const total = Number(deliveryFee) + Number(tip || 0);
 
   const {
     ready: readyPickup,
@@ -54,7 +55,6 @@ function BookingForm() {
 
   const triggerDistanceCalculation = async (pickup, delivery) => {
     setError(null);
-
     if (!pickup || !delivery) {
       setDistance(null);
       setDeliveryFee(0);
@@ -70,7 +70,6 @@ function BookingForm() {
       });
 
       if (!response.ok) throw new Error('Failed to get fee');
-
       const data = await response.json();
 
       setDistance(data.distance);
@@ -87,6 +86,7 @@ function BookingForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
 
     const phoneRegex = /^(\+233|0)[235]{1}[0-9]{8}$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -98,16 +98,19 @@ function BookingForm() {
 
     if (!phoneRegex.test(pickupPhone)) {
       alert("Please enter a valid pickup phone number.");
+      setSubmitting(false);
       return;
     }
 
     if (!phoneRegex.test(deliveryPhone)) {
       alert("Please enter a valid delivery phone number.");
+      setSubmitting(false);
       return;
     }
 
     if (email && !emailRegex.test(email)) {
       alert("Please enter a valid email address.");
+      setSubmitting(false);
       return;
     }
 
@@ -124,10 +127,10 @@ function BookingForm() {
       deliveryDate: form["deliveryDate"].value,
       deliveryTime: form["deliveryTime"].value,
       itemName: form["itemName"].value,
-      deliveryFees: deliveryFee,
-      tips: tip,
+      deliveryFees: deliveryFee,tips: tip,
       total,
-      instructions: form["instructions"] ? form["instructions"].value : "",paymentMethod: form["paymentMethod"] ? form["paymentMethod"].value : "",
+      instructions: form["instructions"]?.value || "",
+      paymentMethod: form["paymentMethod"]?.value || "",
       email: email || null,
     };
 
@@ -139,15 +142,18 @@ function BookingForm() {
       });
 
       const result = await res.json();
+      console.log("Backend response:", result);
 
-      if (res.ok) {
+      if (res.ok && result.success) {
         window.location.href = "https://seeyousoondeliveries.com/thank-you";
       } else {
-        alert("Error: Order submission failed. Please try again.");
+        alert("Order submission failed. Please try again.");
       }
     } catch (err) {
-      alert("Submission error. Please try again.");
+      alert("Network or server error. Please try again.");
       console.error("Submission error:", err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -159,7 +165,6 @@ function BookingForm() {
         <legend>📍 Pick-up From</legend>
         <input type="text" placeholder="🏪 Store Name" name="storeName" required />
         <input type="tel" placeholder="📞 +233 (000) 000-00-00" name="pickupPhone" required />
-
         <div style={{ position: 'relative' }}>
           <input
             type="text"
@@ -179,7 +184,6 @@ function BookingForm() {
             </ul>
           )}
         </div>
-
         <input type="time" name="pickupTime" defaultValue="11:10" />
         <input type="date" name="pickupDate" defaultValue="2025-05-30" />
       </fieldset>
@@ -189,7 +193,6 @@ function BookingForm() {
         <input type="text" placeholder="👤 Customer Name" name="customerName" required />
         <input type="tel" placeholder="📞 +233 (000) 000-00-00" name="deliveryPhone" required />
         <input type="email" placeholder="✉️ Email Address optional" name="email" />
-
         <div style={{ position: 'relative' }}>
           <input
             type="text"
@@ -209,7 +212,6 @@ function BookingForm() {
             </ul>
           )}
         </div>
-
         <input type="date" name="deliveryDate" defaultValue="2025-05-30" />
         <input type="time" name="deliveryTime" defaultValue="11:50" />
       </fieldset>
@@ -228,17 +230,22 @@ function BookingForm() {
         />
         <input type="number" placeholder="💰 Total (₵)" name="total" value={total} readOnly />
         <textarea placeholder="📝 Special Instructions" name="instructions"></textarea>
-
         <select name="paymentMethod" defaultValue="">
-          <option value="" disabled>Select payment method</option>
-          <option value="Cash">Cash</option>
+          <option value="" disabled>Select payment method</option><option value="Cash">Cash</option>
           <option value="Mobile Money">Mobile Money</option>
         </select>
       </fieldset>
 
-      {loadingFee && <p>Calculating fee...</p>}{error && <p style={{ color: "red" }}>{error}</p>}
+      {loadingFee && <p>Calculating fee...</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <button type="submit" disabled={loadingFee}>Submit Order</button>
+      <button type="submit" disabled={submitting || loadingFee}>
+        {submitting ? (
+          <>
+            <span className="spinner" /> Submitting...
+          </>
+        ) : "Submit Order"}
+      </button>
     </form>
   );
 }
