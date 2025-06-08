@@ -50,6 +50,7 @@ app.post('/calculate-fee', async (req, res) => {
 
 // Main form submission route
 app.post('/submit-order', async (req, res) => {
+    console.log("🔔 Incoming Order:", req.body);
   const order = req.body;
 
   try {

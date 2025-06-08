@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import usePlacesAutocomplete from 'use-places-autocomplete';
+import { Order } from '../../shipday-backend/orderModel';
 
 function BookingForm() {
   const [pickupAddress, setPickupAddress] = useState("");
@@ -66,7 +67,7 @@ function BookingForm() {
       const response = await fetch('https://delivery-u9ub.onrender.com/calculate-fee', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pickupAddress: pickup, deliveryAddress: delivery }),
+        body: JSON.stringify(Order.Data)
       });
 
       if (!response.ok) throw new Error('Failed to get fee');
@@ -128,8 +129,9 @@ function BookingForm() {
       total,
       instructions: form["instructions"] ? form["instructions"].value : "",
       paymentMethod: form["paymentMethod"] ? form["paymentMethod"].value : "",email,
+      email: email || null,
     };
-
+    console.log("Submitting order:", orderData);
     try {
       const res = await fetch('https://delivery-u9ub.onrender.com/submit-order', {
         method: "POST",
