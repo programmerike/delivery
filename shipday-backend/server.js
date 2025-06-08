@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors({
   origin: 'https://seeyousoondeliveries.com',
-  methods: ['POST', 'GET'],
+  methods: ['GET', 'POST'],
   credentials: true
 }));
 app.use(express.json());

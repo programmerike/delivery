@@ -127,7 +127,7 @@ function BookingForm() {
       email,
     };
 
-    try {const res = await fetch("https://delivery-u9ub.onrender.com/submit-order", {
+    try {const res = await fetch(`https://delivery-u9ub.onrender.com/submit-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
