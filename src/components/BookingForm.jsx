@@ -65,7 +65,7 @@ function BookingForm() {
       const response = await fetch('https://delivery-u9ub.onrender.com/calculate-fee', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pickupAddress: pickup, deliveryAddress: delivery }),
+        body: JSON.stringify({ formData }),
       });
       if (!response.ok) throw new Error('Failed to get fee');
       const data = await response.json();
@@ -127,7 +127,7 @@ function BookingForm() {
       email,
     };
 
-    try {const res = await fetch(`https://delivery-u9ub.onrender.com/submit-order`, {
+    try {const res = await fetch(`https://delivery-u9ub.onrender.com/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
