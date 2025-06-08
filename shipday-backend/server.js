@@ -41,6 +41,7 @@ const transporter = nodemailer.createTransport({
 
 // Email sender function
 async function sendOrderEmail(order) {
+    
   const mailOptions = {
     from: `"SeeYouSoon Deliveries" <${EMAIL_SENDER}>`,
     to: order.customerEmail || EMAIL_RECEIVER,
@@ -62,6 +63,8 @@ async function sendOrderEmail(order) {
       <p>You can manually enter this on Shipday if needed.</p>
     `,
   };
+  console.log('📧 Attempting to send email to:', EMAIL_RECEIVER);
+console.log('💡 Mail content:', mailOptions);
 
   try {
     await transporter.sendMail(mailOptions);
@@ -153,6 +156,7 @@ app.post('/submit-order', async (req, res) => {
 
     // 4. Send email
     await sendOrderEmail(order);
+    
 
     // 5. Send to Shipday
     const shipdayPayload = {
