@@ -5,6 +5,9 @@ import nodemailer from 'nodemailer';
 
 dotenv.config();
 
+console.log('EMAIL_USER:', process.env.EMAIL_USER ? 'SET': 'NOT SET');
+console.log('EMAIL_PASS:', process.env.EMAIL_PASS ? 'SET': 'NOT SET');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
