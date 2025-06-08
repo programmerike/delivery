@@ -32,7 +32,7 @@ app.post('/submit-order', async (req, res) => {
       <p><strong>📞 Pickup Phone:</strong> ${order.pickupPhone}</p>
       <p><strong>📦 Delivery:</strong> ${order.deliveryAddress} (${order.customerName})</p>
       <p><strong>📞 Delivery Phone:</strong> ${order.deliveryPhone}</p>
-      ${order.email ? <p><strong>✉️ Customer Email:</strong> ${order.email}</p> : ''}
+      ${order.email ? `<p><strong>✉️ Customer Email:</strong> ${order.email}</p>` : ''}
       <p><strong>📅 Date:</strong> ${order.deliveryDate} at ${order.deliveryTime}</p>
       <p><strong>💰 Fee:</strong> GH₵${order.deliveryFees}</p>
       <p><strong>🎁 Tip:</strong> GH₵${order.tips}</p>
