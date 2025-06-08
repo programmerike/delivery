@@ -106,10 +106,11 @@ async function calculateDeliveryFee(pickupAddress, deliveryAddress) {
 
   return { distance: distanceKm.toFixed(2), fee };
 }
-console.log('📦 Form submitted! Body:', req.body);
+
 
 // Main route to handle order submission
 app.post('/submit-order', async (req, res) => {
+    console.log('📦 Form submitted! Body:', req.body);
   try {
     const {
       pickupAddress,
