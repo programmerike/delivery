@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import usePlacesAutocomplete from 'use-places-autocomplete';
-import { Order } from '../../shipday-backend/orderModel';
 
 function BookingForm() {
   const [pickupAddress, setPickupAddress] = useState("");
@@ -67,7 +66,7 @@ function BookingForm() {
       const response = await fetch('https://delivery-u9ub.onrender.com/calculate-fee', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(Order.Data)
+        body: JSON.stringify({ pickupAddress: pickup, deliveryAddress: delivery }),
       });
 
       if (!response.ok) throw new Error('Failed to get fee');
@@ -77,6 +76,7 @@ function BookingForm() {
       setDistance(data.distance);
       setDeliveryFee(data.fee);
     } catch (err) {
+      console.error(err);
       setError('Error calculating delivery fee. Please try again.');
       setDistance(null);
       setDeliveryFee(0);
@@ -127,17 +127,21 @@ function BookingForm() {
       deliveryFees: deliveryFee,
       tips: tip,
       total,
-      instructions: form["instructions"] ? form["instructions"].value : "",
-      paymentMethod: form["paymentMethod"] ? form["paymentMethod"].value : "",email,
+      instructions: form["instructions"] ? form["instructions"].value : "",paymentMethod: form["paymentMethod"] ? form["paymentMethod"].value : "",
       email: email || null,
     };
+
     console.log("Submitting order:", orderData);
+
     try {
       const res = await fetch('https://delivery-u9ub.onrender.com/submit-order', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(orderData),
       });
+
+      const result = await res.json();
+      console.log("Backend response:", result);
 
       if (res.ok) {
         window.location.href = "https://seeyousoondeliveries.com/thank-you";
@@ -231,13 +235,13 @@ function BookingForm() {
         <select name="paymentMethod" defaultValue="">
           <option value="" disabled>Select payment method</option>
           <option value="Cash">Cash</option>
-          <option value="Mobile Money">Mobile Money</option>
-          
-        </select>
+          <option value="Mobile Money">Mobile Money</option></select>
       </fieldset>
 
       {loadingFee && <p>Calculating fee...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}<button type="submit" disabled={loadingFee}>Submit Order</button>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      <button type="submit" disabled={loadingFee}>Submit Order</button>
     </form>
   );
 }
