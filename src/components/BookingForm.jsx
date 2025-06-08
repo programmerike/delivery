@@ -10,7 +10,7 @@ function BookingForm() {
   const [error, setError] = useState("");
   const [tip, setTip] = useState(0);
 
-  const total = Number(deliveryFee) + Number(tip || 0);
+  const total = Number(deliveryFee) + Number(tip || 0); // ✅ fixed
 
   const {
     ready: readyPickup,
@@ -131,8 +131,6 @@ function BookingForm() {
       email: email || null,
     };
 
-    console.log("Submitting order:", orderData);
-
     try {
       const res = await fetch('https://delivery-u9ub.onrender.com/submit-order', {
         method: "POST",
@@ -141,7 +139,6 @@ function BookingForm() {
       });
 
       const result = await res.json();
-      console.log("Backend response:", result);
 
       if (res.ok) {
         window.location.href = "https://seeyousoondeliveries.com/thank-you";
@@ -235,11 +232,11 @@ function BookingForm() {
         <select name="paymentMethod" defaultValue="">
           <option value="" disabled>Select payment method</option>
           <option value="Cash">Cash</option>
-          <option value="Mobile Money">Mobile Money</option></select>
+          <option value="Mobile Money">Mobile Money</option>
+        </select>
       </fieldset>
 
-      {loadingFee && <p>Calculating fee...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {loadingFee && <p>Calculating fee...</p>}{error && <p style={{ color: "red" }}>{error}</p>}
 
       <button type="submit" disabled={loadingFee}>Submit Order</button>
     </form>
