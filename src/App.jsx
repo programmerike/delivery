@@ -115,11 +115,12 @@ function MainApp() {
 
 export default function App() {
   return (
-    <Router>
+    <div className="App"> 
+   
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/thank-you" element={<ThankYou />} />
       </Routes>
-    </Router>
+    </div>
   );
 }
