@@ -32,15 +32,15 @@ const sendOrderEmail = async (order) => {
     to: process.env.NOTIFY_EMAIL || process.env.ADMIN_EMAIL,
     subject: `🚚 New SeeYouSoon Order #${order.orderNumber}`,
     html: `
-      <h2>New Delivery Order</h2>
-      <p><strong>📦 Item:</strong> ${order.itemName}</p>
-      <p><strong>📍 Pickup From:</strong> ${order.storeName} (${order.pickupPhone})<br/>${order.pickupAddress}<br/>${order.pickupDate} at ${order.pickupTime}</p>
-      <p><strong>🎯 Deliver To:</strong> ${order.customerName} (${order.deliveryPhone})<br/>${order.deliveryAddress}<br/>${order.deliveryDate} at ${order.deliveryTime}</p>
-      <p><strong>📝 Instructions:</strong> ${order.instructions || 'None'}</p>
-      <p><strong>💳 Payment Method:</strong> ${order.paymentMethod}</p>
-      <p><strong>💰 Fees:</strong> GH₵${order.deliveryFees} + GH₵${order.tips} Tip = <strong>GH₵${order.total}</strong></p>
-      ${order.email ? <p><strong>✉️ Customer Email:</strong> ${order.email}</p> : ''}
-    `
+  <h2>New Delivery Order</h2>
+  <p><strong>📦 Item:</strong> ${order.itemName}</p>
+  <p><strong>📍 Pickup From:</strong> ${order.storeName} (${order.pickupPhone})<br/>${order.pickupAddress}<br/>${order.pickupDate} at ${order.pickupTime}</p>
+  <p><strong>🎯 Deliver To:</strong> ${order.customerName} (${order.deliveryPhone})<br/>${order.deliveryAddress}<br/>${order.deliveryDate} at ${order.deliveryTime}</p>
+  <p><strong>📝 Instructions:</strong> ${order.instructions || 'None'}</p>
+  <p><strong>💳 Payment Method:</strong> ${order.paymentMethod}</p>
+  <p><strong>💰 Fees:</strong> GH₵${order.deliveryFees} + GH₵${order.tips} Tip = <strong>GH₵${order.total}</strong></p>
+  ${order.email ? `<p><strong>✉️ Customer Email:</strong> ${order.email}</p>` : ''}
+`
   };
 
   await transporter.sendMail(mailOptions);
