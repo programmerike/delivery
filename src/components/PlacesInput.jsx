@@ -1,24 +1,35 @@
-import React, { useEffect, useRef } from "react";
+// PlacesInput.jsx
+import React, { useEffect, useRef } from 'react';
 
-const PlacesInput = ({ onPlaceSelected }) => {
+const PlacesInput = ({ label, onPlaceSelected }) => {
   const autocompleteRef = useRef(null);
 
   useEffect(() => {
-    const input = autocompleteRef.current;
+    if (!window.google || !window.google.maps) return;
 
-    if (input) {
-      input.addEventListener("gmpx-placechange", () => {
-        const place = input.value;
-        onPlaceSelected(place); // update parent state
-      });
-    }
+    const autocomplete = new window.google.maps.places.Autocomplete(autocompleteRef.current, {
+      fields: ['formatted_address', 'geometry'],
+      componentRestrictions: { country: 'gh' },
+    });
+
+    autocomplete.addListener('place_changed', () => {
+      const place = autocomplete.getPlace();
+      if (place && place.formatted_address) {
+        onPlaceSelected(place.formatted_address);
+      }
+    });
   }, []);
 
   return (
-    <gmpx-place-autocomplete
-      ref={autocompleteRef}
-      style={{ width: "100%", height: "40px", padding: "10px", border: "1px solid #ccc", borderRadius: "6px" }}
-    ></gmpx-place-autocomplete>
+    <div className="place-autocomplete-group">
+      <label>{label}</label>
+      <input
+        ref={autocompleteRef}
+        className="place-autocomplete-wrapper"
+        placeholder={`Enter ${label.toLowerCase()}`}
+        required
+      />
+    </div>
   );
 };
 
