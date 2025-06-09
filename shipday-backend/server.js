@@ -5,7 +5,12 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 const app = express();
-app.use(cors());
+app.use(cors(
+    {
+        origin: ["https://seeyousoondeliveries.com", 'https//localhost:3000'],
+        methods: ['POST', 'GET'],
+    }
+));
 app.use(express.json());
 
 const PORT = process.env.PORT || 1000;
