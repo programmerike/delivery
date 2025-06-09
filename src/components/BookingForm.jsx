@@ -39,7 +39,7 @@ function BookingForm() {
 
     setLoadingFee(true);
     try {
-      const res = await fetch("https://delivery-u9ub.onrender.com/calculate-fee", {
+      const res = await fetch("https://https://delivery-gi29.onrender.com/calculate-fee", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pickupAddress: pickup, deliveryAddress: delivery }),
@@ -111,7 +111,7 @@ function BookingForm() {
     };
 
     try {
-      const res = await fetch("https://delivery-u9ub.onrender.com/submit-order", {
+      const res = await fetch("https://https://delivery-gi29.onrender.com/submit-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(orderData),

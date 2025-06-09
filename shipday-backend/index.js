@@ -17,7 +17,7 @@ app.post('/api/create-order', async (req, res) => {
   const orderData = req.body;
 
   try {
-    const response = await fetch(`https://delivery-u9ub.onrender.com/submit-order?pickup=${encodeURIComponent(pickup)}&delivery=${encodeURIComponent(delivery)}`, {
+    const response = await fetch(`https://https://delivery-gi29.onrender.com/submit-order?pickup=${encodeURIComponent(pickup)}&delivery=${encodeURIComponent(delivery)}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
