@@ -120,12 +120,11 @@ function BookingForm() {
         <legend>📍 Pick-up From</legend>
         <input type="text" name="storeName" placeholder="🏪 Store Name" required />
         <input type="tel" name="pickupPhone" placeholder="📞 +233..." required />
-        <PlaceAutocompleteInput
-          placeholder="Enter pickup location"
-          onPlaceSelect={(place) => {
-            setPickupAddress(place);
-            triggerDistanceCalculation(place, deliveryAddress);
-          }}
+        <AddressInput
+  id="pickup-autocomplete"
+  label="Pickup Address"
+  onPlaceSelect={(value) => setPickupAddress(value)}
+
         /><input type="time" name="pickupTime" defaultValue="11:10" />
         <input type="date" name="pickupDate" defaultValue="2025-05-30" />
       </fieldset>
@@ -135,13 +134,11 @@ function BookingForm() {
         <input type="text" name="customerName" placeholder="👤 Customer Name" required />
         <input type="tel" name="deliveryPhone" placeholder="📞 +233..." required />
         <input type="email" name="email" placeholder="✉️ Email (optional)" />
-        <PlaceAutocompleteInput
-          placeholder="Enter delivery location"
-          onPlaceSelect={(place) => {
-            setDeliveryAddress(place);
-            triggerDistanceCalculation(pickupAddress, place);
-          }}
-        />
+        <AddressInput
+  id="delivery-autocomplete"
+  label="Delivery Address"
+  onPlaceSelect={(value) => setDeliveryAddress(value)}
+/>
         <input type="date" name="deliveryDate" defaultValue="2025-05-30" />
         <input type="time" name="deliveryTime" defaultValue="11:50" />
       </fieldset>
