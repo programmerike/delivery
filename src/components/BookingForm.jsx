@@ -1,25 +1,30 @@
 import React, { useState, useEffect, useRef } from "react";
 
-function PlaceAutocomplete({ placeholder, onPlaceSelected }) {
-  const ref = useRef(null);
+
+
+function PlaceAutocomplete({ onPlaceSelected }) {
+  const inputRef = useRef(null);
 
   useEffect(() => {
-    if (window.google?.maps?.places?.PlaceAutocompleteElement) {
-      const autocomplete = new window.google.maps.places.PlaceAutocompleteElement();
-      autocomplete.setAttribute("placeholder", placeholder);
-      ref.current.innerHTML = "";
-      ref.current.appendChild(autocomplete);
+    const interval = setInterval(() => {
+      if (window.google?.maps?.places?.PlaceAutocompleteElement && inputRef.current) {
+        clearInterval(interval);
 
-      autocomplete.addEventListener("gmp-place-select", (e) => {
-        const address = e.detail?.place?.formattedAddress;
-        if (address && onPlaceSelected) {
-          onPlaceSelected(address);
-        }
-      });
-    }
-  }, []);
+        const autocomplete = new window.google.maps.places.PlaceAutocompleteElement();
+        autocomplete.setAttribute('placeholder', 'Enter address...');
+        autocomplete.addEventListener('place_changed', () => {
+          const place = autocomplete.getPlace();
+          onPlaceSelected(place);
+        });
 
-  return <div ref={ref} />;
+        inputRef.current.innerHTML = ''; // Clear previous
+        inputRef.current.appendChild(autocomplete);
+      }
+    }, 200);
+    return () => clearInterval(interval);
+  }, [onPlaceSelected]);
+
+  return <div ref={inputRef} />;
 }
 
 function BookingForm() {
@@ -142,9 +147,11 @@ function BookingForm() {
         <PlaceAutocomplete
           placeholder="Enter pickup location"
           onPlaceSelected={(place) => {
+            console.log("Selected place:", place);
             setPickupAddress(place);
             triggerDistanceCalculation(place, deliveryAddress);
           }}
+        
         />
         <input type="time" name="pickupTime" defaultValue="11:10" />
         <input type="date" name="pickupDate" defaultValue="2025-05-30" />
@@ -158,6 +165,7 @@ function BookingForm() {
         <PlaceAutocomplete
           placeholder="Enter delivery location"
           onPlaceSelected={(place) => {
+            console.log("Selected place:", place);
             setDeliveryAddress(place);
             triggerDistanceCalculation(pickupAddress, place);
           }}
