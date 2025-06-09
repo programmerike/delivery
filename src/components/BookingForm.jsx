@@ -16,54 +16,50 @@ function BookingForm() {
   const total = Number(deliveryFee) + Number(tip || 0);
 
   useEffect(() => {
-  if (window.google && 'PlaceAutocompleteElement' in window.google.maps.places) {
-    // Create pickup autocomplete
-    const pickupInput = new window.google.maps.places.PlaceAutocompleteElement();
-    pickupInput.setAttribute('placeholder', 'Enter pickup location');
-    pickupRef.current.innerHTML = '';
-    pickupRef.current.appendChild(pickupInput);
+    if (window.google && 'PlaceAutocompleteElement' in window.google.maps.places) {
+      const pickupInput = new window.google.maps.places.PlaceAutocompleteElement();
+      pickupInput.setAttribute('placeholder', 'Enter pickup location');
+      pickupRef.current.innerHTML = '';
+      pickupRef.current.appendChild(pickupInput);
 
-    pickupInput.addEventListener('gmp-place-select', (e) => {
-      const address = e?.detail?.place?.formattedAddress;
-      if (address) {
-        setPickupAddress(address);
-        triggerDistanceCalculation(address, deliveryAddress);
-      }
-    });
+      pickupInput.addEventListener('gmp-place-select', (e) => {
+        const address = e?.detail?.place?.formattedAddress;
+        if (address) {
+          setPickupAddress(address);
+          triggerDistanceCalculation(address, deliveryAddress);
+        }
+      });
 
-    // Create delivery autocomplete
-    const deliveryInput = new window.google.maps.places.PlaceAutocompleteElement();
-    deliveryInput.setAttribute('placeholder', 'Enter delivery location');
-    deliveryRef.current.innerHTML = '';
-    deliveryRef.current.appendChild(deliveryInput);
+      const deliveryInput = new window.google.maps.places.PlaceAutocompleteElement();
+      deliveryInput.setAttribute('placeholder', 'Enter delivery location');
+      deliveryRef.current.innerHTML = '';
+      deliveryRef.current.appendChild(deliveryInput);
 
-    deliveryInput.addEventListener('gmp-place-select', (e) => {
-      const address = e?.detail?.place?.formattedAddress;
-      if (address) {
-        setDeliveryAddress(address);
-        triggerDistanceCalculation(pickupAddress, address);
-      }
-    });
-  } else {
-    // Fallback: use text input fields
-    pickupRef.current.innerHTML = <input type="text" placeholder="Enter pickup location manually" class="fallback-address" />;
-    deliveryRef.current.innerHTML = <input type="text" placeholder="Enter delivery location manually" class="fallback-address" />;
+      deliveryInput.addEventListener('gmp-place-select', (e) => {
+        const address = e?.detail?.place?.formattedAddress;
+        if (address) {
+          setDeliveryAddress(address);
+          triggerDistanceCalculation(pickupAddress, address);
+        }
+      });
+    } else {
+      pickupRef.current.innerHTML = '<input type="text" placeholder="Enter pickup location manually" class="fallback-address" />';
+      deliveryRef.current.innerHTML = '<input type="text" placeholder="Enter delivery location manually" class="fallback-address" />';
 
-    // Add manual listeners
-    const pickupManual = pickupRef.current.querySelector('input');
-    const deliveryManual = deliveryRef.current.querySelector('input');
+      const pickupManual = pickupRef.current.querySelector('input');
+      const deliveryManual = deliveryRef.current.querySelector('input');
 
-    pickupManual.addEventListener('blur', () => {
-      setPickupAddress(pickupManual.value);
-      triggerDistanceCalculation(pickupManual.value, deliveryAddress);
-    });
+      pickupManual.addEventListener('blur', () => {
+        setPickupAddress(pickupManual.value);
+        triggerDistanceCalculation(pickupManual.value, deliveryAddress);
+      });
 
-    deliveryManual.addEventListener('blur', () => {
-      setDeliveryAddress(deliveryManual.value);
-      triggerDistanceCalculation(pickupAddress, deliveryManual.value);
-    });
-  }
-}, []);
+      deliveryManual.addEventListener('blur', () => {
+        setDeliveryAddress(deliveryManual.value);
+        triggerDistanceCalculation(pickupAddress, deliveryManual.value);
+      });
+    }
+  }, []);
 
   const triggerDistanceCalculation = async (pickup, delivery) => {
     setError(null);
@@ -83,7 +79,6 @@ function BookingForm() {
 
       if (!response.ok) throw new Error('Failed to get fee');
       const data = await response.json();
-
       setDistance(data.distance);
       setDeliveryFee(data.fee);
     } catch (err) {
@@ -113,13 +108,10 @@ function BookingForm() {
       setSubmitting(false);
       return;
     }
-
     if (!phoneRegex.test(deliveryPhone)) {
-      alert("Please enter a valid delivery phone number.");
-      setSubmitting(false);
+      alert("Please enter a valid delivery phone number.");setSubmitting(false);
       return;
     }
-
     if (email && !emailRegex.test(email)) {
       alert("Please enter a valid email address.");
       setSubmitting(false);
@@ -155,16 +147,14 @@ function BookingForm() {
       });
 
       const result = await res.json();
-      console.log("Backend response:", result);
-
       if (res.ok && result.success) {
         window.location.href = "https://seeyousoondeliveries.com/thank-you";
       } else {
         alert("Order submission failed. Please try again.");
       }
     } catch (err) {
-      alert("Network or server error. Please try again.");
       console.error("Submission error:", err);
+      alert("Network or server error. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -178,30 +168,18 @@ function BookingForm() {
         <legend>📍 Pick-up From</legend>
         <input type="text" placeholder="🏪 Store Name" name="storeName" required />
         <input type="tel" placeholder="📞 +233 (000) 000-00-00" name="pickupPhone" required />
-        <PlacesInput
-  label="Pickup Location"
-  onPlaceSelected={(place) => {
-    setPickupAddress(place);
-    triggerDistanceCalculation(place, deliveryAddress);
-  }}
-/>
+        <div ref={pickupRef} className="autocomplete-container" />
         <input type="time" name="pickupTime" defaultValue="11:10" />
-        <input type="date" name="pickupDate" defaultValue="2025-05-30" />
+        <input type="date" name="pickupDate" defaultValue="2025-06-09" />
       </fieldset>
 
       <fieldset>
         <legend>🎯 Deliver To</legend>
         <input type="text" placeholder="👤 Customer Name" name="customerName" required />
         <input type="tel" placeholder="📞 +233 (000) 000-00-00" name="deliveryPhone" required />
-        <input type="email" placeholder="✉️ Email Address optional" name="email" />
-        <PlacesInput
-  label="Delivery Location"
-  onPlaceSelected={(place) => {
-    setDeliveryAddress(place);
-    triggerDistanceCalculation(pickupAddress, place);
-  }}
-/>
-        <input type="date" name="deliveryDate" defaultValue="2025-05-30" />
+        <input type="email" placeholder="✉️ Email Address (optional)" name="email" />
+        <div ref={deliveryRef} className="autocomplete-container" />
+        <input type="date" name="deliveryDate" defaultValue="2025-06-09" />
         <input type="time" name="deliveryTime" defaultValue="11:50" />
       </fieldset>
 
@@ -218,7 +196,7 @@ function BookingForm() {
           min="0"
         />
         <input type="number" placeholder="💰 Total (₵)" name="total" value={total} readOnly />
-        <textarea placeholder="📝 Special Instructions" name="instructions"></textarea>
+        <textarea placeholder="📝 Special Instructions" name="instructions" />
         <select name="paymentMethod" defaultValue="">
           <option value="" disabled>Select payment method</option>
           <option value="Cash">Cash</option>

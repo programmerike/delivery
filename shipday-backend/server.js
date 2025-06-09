@@ -5,12 +5,10 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 const app = express();
-app.use(cors(
-    {
-        origin: ["https://seeyousoondeliveries.com", 'https//localhost:3000'],
-        methods: ['POST', 'GET'],
-    }
-));
+app.use(cors({
+    origin: ["https://seeyousoondeliveries.com", 'http://localhost:3000'],
+    methods: ['POST', 'GET'],
+}));
 app.use(express.json());
 
 const PORT = process.env.PORT || 1000;
@@ -25,6 +23,7 @@ const transporter = nodemailer.createTransport({
 
 app.post('/submit-order', async (req, res) => {
   const order = req.body;
+  console.log("Received order:", order);
 
   const mailOptions = {
     from: `"SeeYouSoon Courier" <${process.env.EMAIL_USER}>`,

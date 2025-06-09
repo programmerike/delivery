@@ -19,13 +19,13 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="./favicon.png" />
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
-
-    <script
-  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAe6wL6YBhQq6hKcZJvIBpe5Lr_wh_1aJQ&libraries=places&v=weekly"
-  defer
+   <script
+  async
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAe6wL6YBhQq6hKcZJvIBpe5Lr_wh_1aJQ&libraries=places&loading=async&solution_channel=GMP_QB_placeautocomplete_v1_cA"
 ></script>
+
+<!-- Required for Web Components -->
+<script async src="https://unpkg.com/@googlemaps/extended-component-library@latest/dist/index.min.js"></script>
 <script defer>
   customElements.define(
     'place-autocomplete',

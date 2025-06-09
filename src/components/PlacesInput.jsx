@@ -1,34 +1,39 @@
-// PlacesInput.jsx
 import React, { useEffect, useRef } from 'react';
 
 const PlacesInput = ({ label, onPlaceSelected }) => {
-  const autocompleteRef = useRef(null);
+  const containerRef = useRef(null);
 
   useEffect(() => {
-    if (!window.google || !window.google.maps) return;
-
-    const autocomplete = new window.google.maps.places.Autocomplete(autocompleteRef.current, {
-      fields: ['formatted_address', 'geometry'],
-      componentRestrictions: { country: 'gh' },
-    });
-
-    autocomplete.addListener('place_changed', () => {
-      const place = autocomplete.getPlace();
-      if (place && place.formatted_address) {
-        onPlaceSelected(place.formatted_address);
+    const handlePlaceSelect = (event) => {
+      const place = event.detail;
+      if (place && place.formattedAddress) {
+        onPlaceSelected(place.formattedAddress);
       }
-    });
+    };
+
+    const element = containerRef.current?.querySelector('gmpx-place-autocomplete');
+    if (element) {
+      element.addEventListener('gmpx-placeautocomplete-placechange', handlePlaceSelect);
+    }
+
+    return () => {
+      if (element) {
+        element.removeEventListener('gmpx-placeautocomplete-placechange', handlePlaceSelect);
+      }
+    };
   }, []);
 
   return (
     <div className="place-autocomplete-group">
       <label>{label}</label>
-      <input
-        ref={autocompleteRef}
-        className="place-autocomplete-wrapper"
-        placeholder={`Enter ${label.toLowerCase()}`}
-        required
-      />
+      <div ref={containerRef}>
+        <gmpx-place-autocomplete
+          style={{ width: '100%' }}
+          placeholder={`Enter ${label.toLowerCase()}`}
+          input-class-name="place-autocomplete-wrapper"
+          hide-logos
+        ></gmpx-place-autocomplete>
+      </div>
     </div>
   );
 };
