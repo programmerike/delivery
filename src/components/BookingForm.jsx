@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import PlaceAutocompleteInput from "./PlaceAutocompleteInput";
+import React, { useState } from 'react';
+import usePlacesAutocomplete from 'use-places-autocomplete';
 
 function BookingForm() {
   const [pickupAddress, setPickupAddress] = useState("");
@@ -7,32 +7,77 @@ function BookingForm() {
   const [distance, setDistance] = useState(null);
   const [deliveryFee, setDeliveryFee] = useState(0);
   const [loadingFee, setLoadingFee] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [tip, setTip] = useState(0);
 
-  const total = Number(deliveryFee) + Number(tip || 0);
+  const total = Number(deliveryFee) + Number(tip || 0); // ✅ fixed
+
+  const {
+    ready: readyPickup,
+    value: pickupValue,
+    suggestions: { status: pickupStatus, data: pickupSuggestions },
+    setValue: setPickupValue,
+    clearSuggestions: clearPickupSuggestions,
+  } = usePlacesAutocomplete({ requestOptions: { componentRestrictions: { country: 'gh' } }, debounce: 300 });
+
+  const {
+    ready: readyDelivery,
+    value: deliveryValue,
+    suggestions: { status: deliveryStatus, data: deliverySuggestions },
+    setValue: setDeliveryValue,
+    clearSuggestions: clearDeliverySuggestions,
+  } = usePlacesAutocomplete({ requestOptions: { componentRestrictions: { country: 'gh' } }, debounce: 300 });
+
+  const handleSelectPickup = (address) => {
+    setPickupValue(address, false);
+    clearPickupSuggestions();
+    setPickupAddress(address);
+    triggerDistanceCalculation(address, deliveryAddress);
+  };
+
+  const handleSelectDelivery = (address) => {
+    setDeliveryValue(address, false);
+    clearDeliverySuggestions();
+    setDeliveryAddress(address);
+    triggerDistanceCalculation(pickupAddress, address);
+  };
+
+  const handlePickupInput = (e) => {
+    setPickupValue(e.target.value);
+    setPickupAddress(e.target.value);
+  };
+
+  const handleDeliveryInput = (e) => {
+    setDeliveryValue(e.target.value);
+    setDeliveryAddress(e.target.value);
+  };
 
   const triggerDistanceCalculation = async (pickup, delivery) => {
-    if (!pickup || !delivery) return;
+    setError(null);
+
+    if (!pickup || !delivery) {
+      setDistance(null);
+      setDeliveryFee(0);
+      return;
+    }
 
     setLoadingFee(true);
     try {
-      const res = await fetch("https://delivery-u9ub.onrender.com/calculate-fee", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('https://delivery-u9ub.onrender.com/calculate-fee', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pickupAddress: pickup, deliveryAddress: delivery }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error("Failed to calculate fee");
+      if (!response.ok) throw new Error('Failed to get fee');
+
+      const data = await response.json();
 
       setDistance(data.distance);
       setDeliveryFee(data.fee);
-      setError("");
     } catch (err) {
       console.error(err);
-      setError("Error calculating fee. Try again.");
+      setError('Error calculating delivery fee. Please try again.');
       setDistance(null);
       setDeliveryFee(0);
     } finally {
@@ -42,56 +87,52 @@ function BookingForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitting(true);
 
-    const phoneRegex = /^(\+233|0)[235][0-9]{8}$/;
+    const phoneRegex = /^(\+233|0)[235]{1}[0-9]{8}$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     const form = e.target;
-    const pickupPhone = form.pickupPhone.value;
-    const deliveryPhone = form.deliveryPhone.value;
-    const email = form.email.value;
+    const pickupPhone = form["pickupPhone"].value;
+    const deliveryPhone = form["deliveryPhone"].value;
+    const email = form["email"].value;
 
     if (!phoneRegex.test(pickupPhone)) {
-      alert("Invalid pickup phone number");
-      setSubmitting(false);
+      alert("Please enter a valid pickup phone number.");
       return;
     }
+
     if (!phoneRegex.test(deliveryPhone)) {
-      alert("Invalid delivery phone number");
-      setSubmitting(false);
+      alert("Please enter a valid delivery phone number.");
       return;
     }
+
     if (email && !emailRegex.test(email)) {
-      alert("Invalid email address");
-      setSubmitting(false);
+      alert("Please enter a valid email address.");
       return;
     }
 
     const orderData = {
-      orderNumber: form.orderNumber.value,
-      storeName: form.storeName.value,
+      orderNumber: form["orderNumber"].value,
+      storeName: form["storeName"].value,
       pickupPhone,
       pickupAddress,
-      pickupTime: form.pickupTime.value,
-      pickupDate: form.pickupDate.value,
-      customerName: form.customerName.value,
+      pickupTime: form["pickupTime"].value,
+      pickupDate: form["pickupDate"].value,
+      customerName: form["customerName"].value,
       deliveryPhone,
       deliveryAddress,
-      deliveryDate: form.deliveryDate.value,
-      deliveryTime: form.deliveryTime.value,
-      itemName: form.itemName.value,
+      deliveryDate: form["deliveryDate"].value,
+      deliveryTime: form["deliveryTime"].value,
+      itemName: form["itemName"].value,
       deliveryFees: deliveryFee,
       tips: tip,
       total,
-      instructions: form.instructions?.value || "",
-      paymentMethod: form.paymentMethod?.value || "",
+      instructions: form["instructions"] ? form["instructions"].value : "",paymentMethod: form["paymentMethod"] ? form["paymentMethod"].value : "",
       email: email || null,
     };
 
     try {
-        console.log("Submitting order:", orderData)
-      const res = await fetch("https://delivery-u9ub.onrender.com/submit-order", {
+      const res = await fetch('https://delivery-u9ub.onrender.com/submit-order', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(orderData),
@@ -99,64 +140,95 @@ function BookingForm() {
 
       const result = await res.json();
 
-      if (res.ok && result.success) {
+      if (res.ok) {
         window.location.href = "https://seeyousoondeliveries.com/thank-you";
       } else {
-        alert("Submission failed");
+        alert("Error: Order submission failed. Please try again.");
       }
     } catch (err) {
+      alert("Submission error. Please try again.");
       console.error("Submission error:", err);
-      alert("Network/server error");
-    } finally {
-      setSubmitting(false);
     }
   };
 
   return (
-    <form className="booking-form" onSubmit={handleSubmit}>
-      <input type="text" name="orderNumber" placeholder="🔢 Order Number" required className="bold-input" />
+    <form id="delivery-form" className="booking-form" onSubmit={handleSubmit}>
+      <input type="text" placeholder="🔢 Order Number" name="orderNumber" required className="bold-input" />
 
       <fieldset>
         <legend>📍 Pick-up From</legend>
-        <input type="text" name="storeName" placeholder="🏪 Store Name" required />
-        <input type="tel" name="pickupPhone" placeholder="📞 +233..." required />
-        <AddressInput
-  id="pickup-autocomplete"
-  label="Pickup Address"
-  onPlaceSelect={(value) => setPickupAddress(value)}
+        <input type="text" placeholder="🏪 Store Name" name="storeName" required />
+        <input type="tel" placeholder="📞 +233 (000) 000-00-00" name="pickupPhone" required />
 
-        /><input type="time" name="pickupTime" defaultValue="11:10" />
+        <div style={{ position: 'relative' }}>
+          <input
+            type="text"
+            placeholder="📍 Store Address"
+            name="pickupAddress"
+            value={pickupValue}
+            onChange={handlePickupInput}
+            disabled={!readyPickup}
+            required
+            autoComplete="off"
+          />
+          {pickupStatus === 'OK' && (
+            <ul className="autocomplete-dropdown">
+              {pickupSuggestions.map(({ place_id, description }) => (
+                <li key={place_id} onClick={() => handleSelectPickup(description)}>{description}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <input type="time" name="pickupTime" defaultValue="11:10" />
         <input type="date" name="pickupDate" defaultValue="2025-05-30" />
       </fieldset>
 
       <fieldset>
         <legend>🎯 Deliver To</legend>
-        <input type="text" name="customerName" placeholder="👤 Customer Name" required />
-        <input type="tel" name="deliveryPhone" placeholder="📞 +233..." required />
-        <input type="email" name="email" placeholder="✉️ Email (optional)" />
-        <AddressInput
-  id="delivery-autocomplete"
-  label="Delivery Address"
-  onPlaceSelect={(value) => setDeliveryAddress(value)}
-/>
+        <input type="text" placeholder="👤 Customer Name" name="customerName" required />
+        <input type="tel" placeholder="📞 +233 (000) 000-00-00" name="deliveryPhone" required />
+        <input type="email" placeholder="✉️ Email Address optional" name="email" />
+
+        <div style={{ position: 'relative' }}>
+          <input
+            type="text"
+            placeholder="📍 Delivery Address"
+            name="deliveryAddress"
+            value={deliveryValue}
+            onChange={handleDeliveryInput}
+            disabled={!readyDelivery}
+            required
+            autoComplete="off"
+          />
+          {deliveryStatus === 'OK' && (
+            <ul className="autocomplete-dropdown">
+              {deliverySuggestions.map(({ place_id, description }) => (
+                <li key={place_id} onClick={() => handleSelectDelivery(description)}>{description}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+
         <input type="date" name="deliveryDate" defaultValue="2025-05-30" />
         <input type="time" name="deliveryTime" defaultValue="11:50" />
       </fieldset>
 
       <fieldset>
         <legend>🧾 Order Details</legend>
-        <input type="text" name="itemName" placeholder="🛒 Item Name" />
-        <input type="number" name="deliveryFees" placeholder="🚚 Delivery Fee (₵)" value={deliveryFee} readOnly />
+        <input type="text" placeholder="🛒 Item Name" name="itemName" />
+        <input type="number" placeholder="🚚 Delivery Fees (₵)" name="deliveryFees" value={deliveryFee} readOnly />
         <input
           type="number"
+          placeholder="🎁 Tips (₵)"
           name="tips"
-          placeholder="🎁 Tip (₵)"
           value={tip}
-          min="0"
           onChange={(e) => setTip(e.target.value)}
+          min="0"
         />
-        <input type="number" name="total" placeholder="💰 Total (₵)" value={total} readOnly />
-        <textarea name="instructions" placeholder="📝 Special Instructions"></textarea>
+        <input type="number" placeholder="💰 Total (₵)" name="total" value={total} readOnly />
+        <textarea placeholder="📝 Special Instructions" name="instructions"></textarea>
+
         <select name="paymentMethod" defaultValue="">
           <option value="" disabled>Select payment method</option>
           <option value="Cash">Cash</option>
@@ -164,18 +236,9 @@ function BookingForm() {
         </select>
       </fieldset>
 
-      {loadingFee && <p>Calculating fee…</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {loadingFee && <p>Calculating fee...</p>}{error && <p style={{ color: "red" }}>{error}</p>}
 
-      <button type="submit" disabled={submitting || loadingFee}>
-        {submitting ? (
-          <>
-            <span className="spinner" /> Submitting…
-          </>
-        ) : (
-          "Submit Order"
-        )}
-      </button>
+      <button type="submit" disabled={loadingFee}>Submit Order</button>
     </form>
   );
 }
