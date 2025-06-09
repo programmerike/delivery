@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import usePlacesAutocomplete from 'use-places-autocomplete';
+import PlacesInput from './PlacesInput';
+
 
 function BookingForm() {
+    
   const [pickupAddress, setPickupAddress] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [distance, setDistance] = useState(null);
@@ -166,16 +169,11 @@ function BookingForm() {
         <input type="text" placeholder="🏪 Store Name" name="storeName" required />
         <input type="tel" placeholder="📞 +233 (000) 000-00-00" name="pickupPhone" required />
         <div style={{ position: 'relative' }}>
-          <input
-            type="text"
-            placeholder="📍 Store Address"
-            name="pickupAddress"
-            value={pickupValue}
-            onChange={handlePickupInput}
-            disabled={!readyPickup}
-            required
-            autoComplete="off"
-          />
+          <PlacesInput
+  onPlaceSelected={(place) => setPickupAddress(place)}
+  placeholder="Enter pickup location"
+/>
+          
           {pickupStatus === 'OK' && (
             <ul className="autocomplete-dropdown">
               {pickupSuggestions.map(({ place_id, description }) => (
@@ -194,16 +192,10 @@ function BookingForm() {
         <input type="tel" placeholder="📞 +233 (000) 000-00-00" name="deliveryPhone" required />
         <input type="email" placeholder="✉️ Email Address optional" name="email" />
         <div style={{ position: 'relative' }}>
-          <input
-            type="text"
-            placeholder="📍 Delivery Address"
-            name="deliveryAddress"
-            value={deliveryValue}
-            onChange={handleDeliveryInput}
-            disabled={!readyDelivery}
-            required
-            autoComplete="off"
-          />
+          <PlacesInput
+  onPlaceSelected={(place) => setDeliveryAddress(place)}
+  placeholder="Enter delivery location"
+/>
           {deliveryStatus === 'OK' && (
             <ul className="autocomplete-dropdown">
               {deliverySuggestions.map(({ place_id, description }) => (
