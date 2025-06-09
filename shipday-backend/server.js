@@ -1,61 +1,129 @@
 import express from 'express';
 import cors from 'cors';
-import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
+import fetch from 'node-fetch';
+import { v4 as uuidv4 } from 'uuid';
+import nodemailer from 'nodemailer';
 
 dotenv.config();
+
 const app = express();
-app.use(cors({
-    origin: ["https://seeyousoondeliveries.com", 'http://localhost:3000'],
-    methods: ['POST', 'GET'],
-}));
+const PORT = process.env.PORT || 5000;
+
+app.use(cors());
 app.use(express.json());
 
-const PORT = process.env.PORT || 1000;
+const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+const SHIPDAY_API_KEY = process.env.SHIPDAY_API_KEY;
+const EMAIL_RECEIVER = process.env.EMAIL_RECEIVER;
+const EMAIL_SENDER = process.env.EMAIL_SENDER;
+const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD;
 
+const orders = {}; // In-memory orders store
+
+// Nodemailer transporter setup
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: 'smtp.gmail',
+  port: 465,
+  secure: true, // true for 465, false for 587
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: process.env.EMAIL_SENDER,
+    pass: process.env.EMAIL_PASSWORD,
   },
 });
 
-app.post('/submit-order', async (req, res) => {
-  const order = req.body;
-  console.log("Received order:", order);
-
+// Send order email function
+async function sendOrderEmail(order) {
   const mailOptions = {
-    from: `"SeeYouSoon Courier" <${process.env.EMAIL_USER}>`,
-    to: process.env.EMAIL_USER,
-    subject: `📦 New Delivery Order: ${order.orderNumber || 'N/A'}`,
+    from: `"SeeYouSoon Deliveris" <${EMAIL_SENDER}>`,
+    to: EMAIL_RECEIVER,
+    subject: `📬 New Delivery Order #${order.orderId}`,
     html: `
-      <h2>🚚 New Delivery Order Received</h2>
-      <p><strong>🛒 Item:</strong> ${order.itemName}</p>
-      <p><strong>📍 Pickup:</strong> ${order.pickupAddress} (${order.storeName})</p>
-      <p><strong>📞 Pickup Phone:</strong> ${order.pickupPhone}</p>
-      <p><strong>📦 Delivery:</strong> ${order.deliveryAddress} (${order.customerName})</p>
-      <p><strong>📞 Delivery Phone:</strong> ${order.deliveryPhone}</p>
-      ${order.email ? `<p><strong>✉️ Customer Email:</strong> ${order.email}</p>` : ''}
-      <p><strong>📅 Date:</strong> ${order.deliveryDate} at ${order.deliveryTime}</p>
-      <p><strong>💰 Fee:</strong> GH₵${order.deliveryFees}</p>
-      <p><strong>🎁 Tip:</strong> GH₵${order.tips}</p>
-      <p><strong>💵 Total:</strong> GH₵${order.total}</p>
-      ${order.instructions ? `<p><strong>📝 Instructions:</strong> ${order.instructions}</p>` : ''}
-      <p><strong>💳 Payment Method:</strong> ${order.paymentMethod || 'Not specified'}</p>
+      <h2>🚀 New Order Received</h2>
+      <p><strong>Order Number:</strong> ${order.orderId}</p>
+      <p><strong>Pickup Address:</strong> ${order.pickupAddress}</p>
+      <p><strong>Delivery Address:</strong> ${order.deliveryAddress}</p>
+      <p><strong>Customer Name:</strong> ${order.customerName}</p>
+      <p><strong>Phone:</strong> ${order.customerPhone}</p>
+      <p><strong>Email:</strong> ${order.customerEmail}</p>
+      <p><strong>Delivery Fee:</strong> GH₵${order.deliveryFee}</p>
+      <p><strong>Tip:</strong> GH₵${order.tip || 0}</p>
+      <p><strong>Total:</strong> GH₵${order.total}</p>
+      <p><strong>Pickup Code:</strong> ${order.pickupCode}</p>
+      <p><strong>Delivery Code:</strong> ${order.deliveryCode}</p>
+      <hr />
+      <p>You can manually enter this on Shipday if needed.</p>
     `,
   };
 
+  await transporter.sendMail(mailOptions);
+}
+
+// Submit order endpoint
+app.post('/submit-order', async (req, res) => {
+  const order = req.body;
+
+  // Generate unique order ID and verification codes
+  const orderId = uuidv4();
+  const pickupCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const deliveryCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+  const orderData = {
+    ...order,
+    orderId,
+    pickupCode,
+    deliveryCode,
+    createdAt: new Date().toISOString(),
+  };
+
+  orders[orderId] = orderData;
+
   try {
-    await transporter.sendMail(mailOptions);
-    console.log("📨 Email sent successfully.");
-    res.json({ success: true });
-  } catch (err) {
-    console.error("❌ Failed to send email:", err);
-    res.status(500).json({ success: false, error: "Email failed to send." });
+    // Send to Shipday
+    const response = await fetch('https://api.shipday.com/orders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `API-KEY ${SHIPDAY_API_KEY}`,
+      },
+      body: JSON.stringify({
+        restaurant: {
+          id: process.env.SHIPDAY_BUSINESS_ID,
+        },
+        pickupAddress: order.pickupAddress,
+        deliveryAddress: order.deliveryAddress,
+        customerName: order.customerName,
+        customerPhoneNumber: order.customerPhone,
+        customerEmail: order.customerEmail,
+        orderNumber: orderId,
+        price: order.total,
+        tip: order.tip || 0,
+        notes: `Pickup Code: ${pickupCode}, Delivery Code: ${deliveryCode}`,
+      }),
+    });
+
+    const shipdayResult = await response.json();
+    console.log('✅ Shipday response:', shipdayResult);
+
+    // Send email to admin or recipient
+    await sendOrderEmail(orderData);
+
+    res.json({
+      success: true,
+      orderId,
+      pickupCode,
+      deliveryCode,
+      fee: order.deliveryFee,
+      tip: order.tip || 0,
+      total: order.total,
+    });
+  } catch (error) {
+    console.error('❌ Submit order error:', error);
+    res.status(500).json({ error: 'Failed to submit order' });
   }
 });
 
+// Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
