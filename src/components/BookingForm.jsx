@@ -90,6 +90,7 @@ function BookingForm() {
     };
 
     try {
+        console.log("Submitting order:", orderData)
       const res = await fetch("https://delivery-u9ub.onrender.com/submit-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
