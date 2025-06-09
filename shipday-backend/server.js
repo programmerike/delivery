@@ -37,7 +37,7 @@ app.post('/submit-order', async (req, res) => {
       <p><strong>💰 Fee:</strong> GH₵${order.deliveryFees}</p>
       <p><strong>🎁 Tip:</strong> GH₵${order.tips}</p>
       <p><strong>💵 Total:</strong> GH₵${order.total}</p>
-      ${order.instructions ? <p><strong>📝 Instructions:</strong> ${order.instructions}</p> : ''}
+      ${order.instructions ? `<p><strong>📝 Instructions:</strong> ${order.instructions}</p>` : ''}
       <p><strong>💳 Payment Method:</strong> ${order.paymentMethod || 'Not specified'}</p>
     `,
   };
