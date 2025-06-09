@@ -1,26 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-
-function PlaceAutocomplete({ placeholder, onPlaceSelected }) {
-  const ref = useRef(null);
-
-  useEffect(() => {
-    if (window.google?.maps?.places?.PlaceAutocompleteElement) {
-      const autocomplete = new window.google.maps.places.PlaceAutocompleteElement();
-      autocomplete.setAttribute("placeholder", placeholder);
-      ref.current.innerHTML = "";
-      ref.current.appendChild(autocomplete);
-
-      autocomplete.addEventListener("gmp-place-select", (e) => {
-        const address = e.detail?.place?.formattedAddress;
-        if (address && onPlaceSelected) {
-          onPlaceSelected(address);
-        }
-      });
-    }
-  }, []);
-
-  return <div ref={ref} />;
-}
+import React, { useState } from "react";
+import PlaceAutocompleteInput from "./PlaceAutocompleteInput";
 
 function BookingForm() {
   const [pickupAddress, setPickupAddress] = useState("");
@@ -132,21 +111,21 @@ function BookingForm() {
     }
   };
 
-  return (<form className="booking-form" onSubmit={handleSubmit}>
+  return (
+    <form className="booking-form" onSubmit={handleSubmit}>
       <input type="text" name="orderNumber" placeholder="🔢 Order Number" required className="bold-input" />
 
       <fieldset>
         <legend>📍 Pick-up From</legend>
         <input type="text" name="storeName" placeholder="🏪 Store Name" required />
         <input type="tel" name="pickupPhone" placeholder="📞 +233..." required />
-        <PlaceAutocomplete
+        <PlaceAutocompleteInput
           placeholder="Enter pickup location"
-          onPlaceSelected={(place) => {
+          onPlaceSelect={(place) => {
             setPickupAddress(place);
             triggerDistanceCalculation(place, deliveryAddress);
           }}
-        />
-        <input type="time" name="pickupTime" defaultValue="11:10" />
+        /><input type="time" name="pickupTime" defaultValue="11:10" />
         <input type="date" name="pickupDate" defaultValue="2025-05-30" />
       </fieldset>
 
@@ -155,9 +134,9 @@ function BookingForm() {
         <input type="text" name="customerName" placeholder="👤 Customer Name" required />
         <input type="tel" name="deliveryPhone" placeholder="📞 +233..." required />
         <input type="email" name="email" placeholder="✉️ Email (optional)" />
-        <PlaceAutocomplete
+        <PlaceAutocompleteInput
           placeholder="Enter delivery location"
-          onPlaceSelected={(place) => {
+          onPlaceSelect={(place) => {
             setDeliveryAddress(place);
             triggerDistanceCalculation(pickupAddress, place);
           }}
