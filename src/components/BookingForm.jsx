@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import usePlacesAutocomplete from 'use-places-autocomplete';
+import './BookingForm.css'; // Ensure this CSS file contains the spinner styles below
 
 function BookingForm() {
   const [pickupAddress, setPickupAddress] = useState("");
@@ -10,7 +11,7 @@ function BookingForm() {
   const [error, setError] = useState("");
   const [tip, setTip] = useState(0);
 
-  const total = Number(deliveryFee) + Number(tip || 0); // ✅ fixed
+  const total = Number(deliveryFee) + Number(tip || 0); // fixed typo
 
   const {
     ready: readyPickup,
@@ -126,8 +127,8 @@ function BookingForm() {
       itemName: form["itemName"].value,
       deliveryFees: deliveryFee,
       tips: tip,
-      total,
-      instructions: form["instructions"] ? form["instructions"].value : "",paymentMethod: form["paymentMethod"] ? form["paymentMethod"].value : "",
+      total,instructions: form["instructions"] ? form["instructions"].value : "",
+      paymentMethod: form["paymentMethod"] ? form["paymentMethod"].value : "",
       email: email || null,
     };
 
@@ -233,12 +234,20 @@ function BookingForm() {
           <option value="" disabled>Select payment method</option>
           <option value="Cash">Cash</option>
           <option value="Mobile Money">Mobile Money</option>
-        </select>
-      </fieldset>
+        </select></fieldset>
 
-      {loadingFee && <p>Calculating fee...</p>}{error && <p style={{ color: "red" }}>{error}</p>}
+      {loadingFee && (
+        <div className="spinner-container">
+          <div className="spinner"></div>
+          <p>Calculating delivery fee...</p>
+        </div>
+      )}
 
-      <button type="submit" disabled={loadingFee}>Submit Order</button>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      <button type="submit" disabled={loadingFee}>
+        {loadingFee ? "Submitting..." : "Submit Order"}
+      </button>
     </form>
   );
 }
