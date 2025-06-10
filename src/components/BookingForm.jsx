@@ -3,8 +3,8 @@ import usePlacesAutocomplete from 'use-places-autocomplete';
 import './BookingForm.css'; // Ensure this CSS file contains the spinner styles below
 
 function BookingForm() {
-  const [pickupAddress, setPickupAddress] = useState("");
-  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [pickupAddress, setPickupAddress] = useState(null);
+  const [deliveryAddress, setDeliveryAddress] = useState(null);
   const [distance, setDistance] = useState(null);
   const [deliveryFee, setDeliveryFee] = useState(0);
   const [loadingFee, setLoadingFee] = useState(false);
@@ -85,72 +85,82 @@ function BookingForm() {
       setLoadingFee(false);
     }
   };
+  const [isSubmitting, setIsSubmitting] = useState(false);
+const [showSuccess, setShowSuccess] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const phoneRegex = /^(\+233|0)[235]{1}[0-9]{8}$/;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^(\+233|0)[235]{1}[0-9]{8}$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    const form = e.target;
-    const pickupPhone = form["pickupPhone"].value;
-    const deliveryPhone = form["deliveryPhone"].value;
-    const email = form["email"].value;
+  const form = e.target;
+  const pickupPhone = form["pickupPhone"].value;
+  const deliveryPhone = form["deliveryPhone"].value;
+  const email = form["email"].value;
 
-    if (!phoneRegex.test(pickupPhone)) {
-      alert("Please enter a valid pickup phone number.");
-      return;
-    }
+  if (!phoneRegex.test(pickupPhone)) {
+    alert("Please enter a valid pickup phone number.");
+    return;
+  }
 
-    if (!phoneRegex.test(deliveryPhone)) {
-      alert("Please enter a valid delivery phone number.");
-      return;
-    }
+  if (!phoneRegex.test(deliveryPhone)) {
+    alert("Please enter a valid delivery phone number.");
+    return;
+  }
 
-    if (email && !emailRegex.test(email)) {
-      alert("Please enter a valid email address.");
-      return;
-    }
+  if (email && !emailRegex.test(email)) {
+    alert("Please enter a valid email address.");
+    return;
+  }
 
-    const orderData = {
-      orderNumber: form["orderNumber"].value,
-      storeName: form["storeName"].value,
-      pickupPhone,
-      pickupAddress,
-      pickupTime: form["pickupTime"].value,
-      pickupDate: form["pickupDate"].value,
-      customerName: form["customerName"].value,
-      deliveryPhone,
-      deliveryAddress,
-      deliveryDate: form["deliveryDate"].value,
-      deliveryTime: form["deliveryTime"].value,
-      itemName: form["itemName"].value,
-      deliveryFees: deliveryFee,
-      tips: tip,
-      total,instructions: form["instructions"] ? form["instructions"].value : "",
-      paymentMethod: form["paymentMethod"] ? form["paymentMethod"].value : "",
-      email: email || null,
-    };
-
-    try {
-      const res = await fetch('https://delivery-u9ub.onrender.com/submit-order', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(orderData),
-      });
-
-      const result = await res.json();
-
-      if (res.ok) {
-        window.location.href = "https://seeyousoondeliveries.com/thank-you";
-      } else {
-        alert("Error: Order submission failed. Please try again.");
-      }
-    } catch (err) {
-      alert("Submission error. Please try again.");
-      console.error("Submission error:", err);
-    }
+  const orderData = {
+    orderNumber: form["orderNumber"].value,
+    storeName: form["storeName"].value,
+    pickupPhone,
+    pickupAddress,
+    pickupTime: form["pickupTime"].value,
+    pickupDate: form["pickupDate"].value,
+    customerName: form["customerName"].value,
+    deliveryPhone,
+    deliveryAddress,
+    deliveryDate: form["deliveryDate"].value,
+    deliveryTime: form["deliveryTime"].value,
+    itemName: form["itemName"].value,
+    deliveryFees: deliveryFee,
+    tips: tip,
+    total,
+    instructions: form["instructions"] ? form["instructions"].value : "",
+    paymentMethod: form["paymentMethod"] ? form["paymentMethod"].value : "",
+    email: email || null,
   };
+
+  try {
+    setIsSubmitting(true);
+    const res = await fetch('https://delivery-u9ub.onrender.com/submit-order', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(orderData),
+    });
+
+    const result = await res.json();
+
+    if (res.ok) {
+      setShowSuccess(true);
+      setTimeout(() => {
+        window.location.href = "https://seeyousoondeliveries.com/thank-you";
+      }, 2000);
+    } else {
+      alert("Error: Order submission failed. Please try again.");
+      setIsSubmitting(false);
+    }
+  } catch (err) {
+    alert("Submission error. Please try again.");
+    console.error("Submission error:", err);
+    setIsSubmitting(false);
+  }
+};
+
 
   return (
     <form id="delivery-form" className="booking-form" onSubmit={handleSubmit}>
@@ -162,16 +172,13 @@ function BookingForm() {
         <input type="tel" placeholder="📞 +233 (000) 000-00-00" name="pickupPhone" required />
 
         <div style={{ position: 'relative' }}>
-          <input
-            type="text"
-            placeholder="📍 Store Address"
-            name="pickupAddress"
-            value={pickupValue}
-            onChange={handlePickupInput}
-            disabled={!readyPickup}
-            required
-            autoComplete="off"
-          />
+          <PlaceAutocompleteElement
+  onPlaceChanged={(event) => {
+    const place = event.detail;       // Get selected place object
+    setPickupAddress(place);          // Save it into state
+  }}
+/>
+
           {pickupStatus === 'OK' && (
             <ul className="autocomplete-dropdown">
               {pickupSuggestions.map(({ place_id, description }) => (
@@ -192,16 +199,13 @@ function BookingForm() {
         <input type="email" placeholder="✉️ Email Address optional" name="email" />
 
         <div style={{ position: 'relative' }}>
-          <input
-            type="text"
-            placeholder="📍 Delivery Address"
-            name="deliveryAddress"
-            value={deliveryValue}
-            onChange={handleDeliveryInput}
-            disabled={!readyDelivery}
-            required
-            autoComplete="off"
-          />
+          <PlaceAutocompleteElement
+  onPlaceChanged={(event) => {
+    const place = event.detail;
+    setDeliveryAddress(place);
+  }}
+/>
+
           {deliveryStatus === 'OK' && (
             <ul className="autocomplete-dropdown">
               {deliverySuggestions.map(({ place_id, description }) => (
@@ -251,5 +255,16 @@ function BookingForm() {
     </form>
   );
 }
-
+if (isSubmitting) {
+  return (
+    <div className="fullscreen-loading">
+      <div className="spinner"></div>
+      {showSuccess ? (
+        <div className="success-message">✅ Order submitted successfully!</div>
+      ) : (
+        <p>Submitting your order...</p>
+      )}
+    </div>
+  );
+}
 export default BookingForm;
