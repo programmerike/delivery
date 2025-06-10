@@ -91,26 +91,32 @@ const [showSuccess, setShowSuccess] = useState(false);
   const handleSubmit = async (e) => {
   e.preventDefault();
 
+  const form = e.target;
+
   const phoneRegex = /^(\+233|0)[235]{1}[0-9]{8}$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  const form = e.target;
   const pickupPhone = form["pickupPhone"].value;
   const deliveryPhone = form["deliveryPhone"].value;
   const email = form["email"].value;
 
+  if (!pickupAddress || !deliveryAddress) {
+    alert("Pickup and delivery addresses are required.");
+    return;
+  }
+
   if (!phoneRegex.test(pickupPhone)) {
-    alert("Please enter a valid pickup phone number.");
+    alert("Invalid pickup phone number.");
     return;
   }
 
   if (!phoneRegex.test(deliveryPhone)) {
-    alert("Please enter a valid delivery phone number.");
+    alert("Invalid delivery phone number.");
     return;
   }
 
   if (email && !emailRegex.test(email)) {
-    alert("Please enter a valid email address.");
+    alert("Invalid email address.");
     return;
   }
 
@@ -137,7 +143,8 @@ const [showSuccess, setShowSuccess] = useState(false);
 
   try {
     setIsSubmitting(true);
-    const res = await fetch('https://delivery-u9ub.onrender.com/submit-order', {
+    
+    const res = await fetch("https://delivery-u9ub.onrender.com/submit-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(orderData),
@@ -148,15 +155,15 @@ const [showSuccess, setShowSuccess] = useState(false);
     if (res.ok) {
       setShowSuccess(true);
       setTimeout(() => {
-        window.location.href = "https://seeyousoondeliveries.com/thank-you";
+        window.location.href = "/thank-you";
       }, 2000);
     } else {
-      alert("Error: Order submission failed. Please try again.");
+      alert("Submission failed: " + (result.error || "Unknown error"));
       setIsSubmitting(false);
     }
   } catch (err) {
-    alert("Submission error. Please try again.");
-    console.error("Submission error:", err);
+    console.error("Error submitting order:", err);
+    alert("Network error or server not responding.");
     setIsSubmitting(false);
   }
 };

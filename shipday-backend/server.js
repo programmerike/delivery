@@ -16,7 +16,7 @@ app.post('/api/create-order', async (req, res) => {
   const orderData = req.body;
 
   try {
-    const response = await fetch(`https://api.shipday.com/orders`, {
+    const response = await fetch('https://api.shipday.com/orders', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -46,6 +46,10 @@ app.post('/api/create-order', async (req, res) => {
     console.error('Shipday error:', err.message);
     res.status(500).json({ success: false, error: err.message });
   }
+});
+
+app.get('/', (req, res) => {
+  res.send('SeeYouSoon backend is running.');
 });
 
 app.listen(PORT, () => {
