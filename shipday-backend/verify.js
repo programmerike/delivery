@@ -1,6 +1,6 @@
 // /routes/verify.js
 import express from 'express';
-import { verificationCodes } from './routes/submitDelivery.js';
+import { verificationCodes } from './submitDelivery.js';
 
 const router = express.Router();
 

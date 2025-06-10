@@ -19,14 +19,14 @@ function sendOrderEmail(order) {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: process.env.SEEYOUSOON_EMAIL,
-      pass: process.env.SEEYOUSOON_EMAIL_PASSWORD,
+      user: process.env.EMAIL_SENDER,
+      pass: process.env.EMAIL_PASSWORD,
     },
   });
 
   const mailOptions = {
-    from: `"SeeYouSoon Courier" <${process.env.SEEYOUSOON_EMAIL}>`,
-    to: process.env.SEEYOUSOON_EMAIL,
+    from: `"SeeYouSoon Courier" <${process.env.EMAIL_SENDER}>`,
+    to: process.env.EMAIL_SENDER,
     subject: `📦 New Delivery Order from ${order.senderName}`,
     text: `
 ✅ NEW DELIVERY ORDER
