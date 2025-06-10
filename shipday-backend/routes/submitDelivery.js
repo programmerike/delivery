@@ -7,13 +7,14 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const router = express.Router();
+const verificationCodes = {}; // In-memory temporary storage
 
-const verificationCodes = {}; // In-memory for now
-
+// Generate random 6-char hex codes
 function generateCode() {
   return crypto.randomBytes(3).toString('hex').toUpperCase();
 }
 
+// Send email with order details
 function sendOrderEmail(order) {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -25,10 +26,10 @@ function sendOrderEmail(order) {
 
   const mailOptions = {
     from: `"SeeYouSoon Courier" <${process.env.SEEYOUSOON_EMAIL}>`,
-    to: process.env.SEEYOUSOON_EMAIL, // send to your admin inbox
+    to: process.env.SEEYOUSOON_EMAIL,
     subject: `📦 New Delivery Order from ${order.senderName}`,
     text: `
-New Delivery Order
+✅ NEW DELIVERY ORDER
 
 Sender: ${order.senderName}
 Pickup Address: ${order.pickupAddress}
@@ -45,6 +46,7 @@ Order ID: ${order.orderId}
   return transporter.sendMail(mailOptions);
 }
 
+// Handle POST request
 router.post('/submit', async (req, res) => {
   try {
     const deliveryData = req.body;
@@ -53,7 +55,7 @@ router.post('/submit', async (req, res) => {
     const deliveryCode = generateCode();
     const orderId = crypto.randomUUID();
 
-    // Store verification codes in memory
+    // Store verification codes temporarily
     verificationCodes[orderId] = {
       pickupCode,
       deliveryCode,
@@ -72,9 +74,10 @@ router.post('/submit', async (req, res) => {
       deliveryCode,
     };
 
-    // Send email
+    // Send the email
     await sendOrderEmail(order);
 
+    // Respond to frontend
     res.json({
       success: true,
       orderId,
@@ -82,8 +85,8 @@ router.post('/submit', async (req, res) => {
       deliveryCode,
     });
   } catch (err) {
-    console.error('Error processing order:', err);
-    res.status(500).json({ success: false, error: 'Failed to submit order' });
+    console.error('❌ Email/Order Error:', err);
+    res.status(500).json({ success: false, error: 'Failed to submit order.' });
   }
 });
 
