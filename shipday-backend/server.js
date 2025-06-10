@@ -2,59 +2,62 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import fetch from 'node-fetch';
+import nodemailer from 'nodemailer';
 
 dotenv.config();
 
 const app = express();
 app.use(cors());
-app.use(express.json()); // Parses incoming JSON
+app.use(express.json());
 
-const PORT = process.env.PORT || 5000; // ✅ FIXED THIS LINE
+const PORT = process.env.PORT || 5000;
 
-// ✅ CREATE ORDER ROUTE
-app.post('/api/create-order', async (req, res) => {
-  const orderData = req.body;
+app.post('/submit-order', async (req, res) => {
+  const order = req.body;
 
-  if (!orderData || typeof orderData !== 'object') {
-    return res.status(400).json({ success: false, error: 'Invalid request body' });
-  }
+  // Format email content
+  const emailBody = `
+    <h2>New Delivery Order</h2>
+    <p><strong>Pickup Name:</strong> ${order.pickupName}</p>
+    <p><strong>Pickup Phone:</strong> ${order.pickupPhoneNumber}</p>
+    <p><strong>Pickup Address:</strong> ${order.pickupAddress}</p>
+    <p><strong>Customer Name:</strong> ${order.customerName}</p>
+    <p><strong>Customer Phone:</strong> ${order.phoneNumber}</p>
+    <p><strong>Delivery Address:</strong> ${order.deliveryAddress}</p>
+    <p><strong>Instructions:</strong> ${order.instructions || 'None'}</p>
+    <p><strong>Distance:</strong> ${order.distance || 'N/A'} km</p>
+    <p><strong>Delivery Fee:</strong> GH₵${order.fee}</p>
+    <p><strong>Tip:</strong> GH₵${order.tip || 0}</p>
+    <p><strong>Total:</strong> GH₵${order.total}</p>
+    <p><strong>Order Number:</strong> ${order.orderNumber}</p>
+    <hr/>
+    <p>This order was submitted from SeeYouSoon Courier Booking Form.</p>
+  `;
 
   try {
-    const response = await fetch('https://api.shipday.com/orders', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.SHIPDAY_API_KEY}`,
-      },
-      body: JSON.stringify({
-        pickupAddress: orderData.pickupAddress,
-        pickupName: orderData.pickupName,
-        pickupPhoneNumber: orderData.pickupPhoneNumber,
-        deliveryAddress: orderData.deliveryAddress,
-        customerName: orderData.customerName,
-        phoneNumber: orderData.phoneNumber,
-        instructions: orderData.instructions || '',
-        items: orderData.items || [],
-        orderNumber: orderData.orderNumber,
-      }),
+    // Setup mail transporter
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER, // your Gmail
+        pass: process.env.EMAIL_PASS   // app password
+      }
     });
 
-    const data = await response.json();
+    await transporter.sendMail({
+      from: `"SeeYouSoon Courier" <${process.env.EMAIL_USER}>`,
+      to: process.env.EMAIL_USER,
+      subject: `📦 New Delivery Order: ${order.orderNumber}`,
+      html: emailBody
+    });
 
-    if (!response.ok) {
-      console.error('Shipday error response:', data);
-      return res.status(response.status).json({ success: false, error: data });
-    }
-
-    res.status(200).json({ success: true, data });
+    res.status(200).json({ success: true, message: 'Email sent successfully' });
   } catch (err) {
-    console.error('Shipday error:', err.message);
-    res.status(500).json({ success: false, error: err.message });
+    console.error('Email error:', err);
+    res.status(500).json({ success: false, error: 'Email failed to send' });
   }
 });
 
-// ✅ HEALTH CHECK ROUTE
 app.get('/', (req, res) => {
   res.send('SeeYouSoon backend is running.');
 });
