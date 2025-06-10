@@ -19,45 +19,15 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="./favicon.png" />
 
-   <!-- Google Maps JavaScript API (required) -->
-<script
-  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyASjaZZMMTYchRK0If4gio-6onptUYqXv0&libraries=places&v=weekly"
-  defer
-></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
 
-<!-- Load Web Components module -->
-<script
-  src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&modules=places"
-  type="module"
-></script>
-
-
-<script defer>
-  customElements.define(
-    'place-autocomplete',
-    class extends HTMLElement {
-      connectedCallback() {
-        const input = document.createElement("input");
-        input.className = this.className;
-        input.placeholder = this.getAttribute("placeholder") || "";
-        this.appendChild(input);
-
-        const autocomplete = new google.maps.places.Autocomplete(input, {
-          fields: ["formatted_address", "geometry", "name"],
-          types: ["geocode"],
-        });
-
-        autocomplete.addListener("place_changed", () => {
-          const place = autocomplete.getPlace();
-          this.dispatchEvent(new CustomEvent("placeChanged", {
-            detail: { place },
-          }));
-        });
-      }
-    }
-  );
-</script>
-
+    <!-- Google Maps Places API -->
+    <script
+         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyASjaZZMMTYchRK0If4gio-6onptUYqXv0&libraries=places&loading=async"
+        defer
+        
+    ></script>
 
 
     <title>SeeYouSoon Deliveries</title>
@@ -66,8 +36,5 @@
   </head>
   <body>
     <div id="root"></div>
-    <footer>
-    <p>© 2025 SeeYouSoon. All rights reserved.</p>
-  </footer>
   </body>
 </html>
