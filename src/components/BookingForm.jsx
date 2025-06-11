@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import usePlacesAutocomplete from 'use-places-autocomplete';
-import './BookingForm.css'; // Ensure this CSS file contains the spinner styles below
+import { PlaceAutocompleteElement } from '@googlemaps/places-widget';
+import './BookingForm.css';
 
 function BookingForm() {
   const [pickupAddress, setPickupAddress] = useState(null);
@@ -8,10 +9,12 @@ function BookingForm() {
   const [distance, setDistance] = useState(null);
   const [deliveryFee, setDeliveryFee] = useState(0);
   const [loadingFee, setLoadingFee] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [tip, setTip] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  const total = Number(deliveryFee) + Number(tip || 0); // fixed typo
+  const total = Number(deliveryFee) + Number(tip || 0);
 
   const {
     ready: readyPickup,
@@ -73,7 +76,6 @@ function BookingForm() {
       if (!response.ok) throw new Error('Failed to get fee');
 
       const data = await response.json();
-
       setDistance(data.distance);
       setDeliveryFee(data.fee);
     } catch (err) {
@@ -85,89 +87,101 @@ function BookingForm() {
       setLoadingFee(false);
     }
   };
-  const [isSubmitting, setIsSubmitting] = useState(false);
-const [showSuccess, setShowSuccess] = useState(false);
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setIsSubmitting(true);
+    e.preventDefault();
+    setIsSubmitting(true);
 
-  const form = e.target;
+    const form = e.target;
 
-  const phoneRegex = /^(\+233|0)[235]{1}[0-9]{8}$/;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^(\+233|0)[235]{1}[0-9]{8}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  const pickupPhone = form["pickupPhone"].value;
-  const deliveryPhone = form["deliveryPhone"].value;
-  const email = form["email"].value;
+    const pickupPhone = form['pickupPhone'].value;
+    const deliveryPhone = form['deliveryPhone'].value;
+    const email = form['email'].value;
 
-  if (!pickupAddress || !deliveryAddress) {
-    alert("Pickup and delivery addresses are required.");
-    return;
-  }
+    if (!pickupAddress || !deliveryAddress) {
+      alert('Pickup and delivery addresses are required.');
+      setIsSubmitting(false);
+      return;
+    }
 
-  if (!phoneRegex.test(pickupPhone)) {
-    alert("Invalid pickup phone number.");
-    return;
-  }
+    if (!phoneRegex.test(pickupPhone)) {
+      alert('Invalid pickup phone number.');
+      setIsSubmitting(false);
+      return;
+    }
 
-  if (!phoneRegex.test(deliveryPhone)) {
-    alert("Invalid delivery phone number.");
-    return;
-  }
+    if (!phoneRegex.test(deliveryPhone)) {
+      alert('Invalid delivery phone number.');
+      setIsSubmitting(false);
+      return;
+    }
 
-  if (email && !emailRegex.test(email)) {
-    alert("Invalid email address.");
-    return;
-  }
+    if (email && !emailRegex.test(email)) {
+      alert('Invalid email address.');
+      setIsSubmitting(false);
+      return;
+    }
 
-  const orderData = {
-    orderNumber: form["orderNumber"].value,
-    storeName: form["storeName"].value,
-    pickupPhone,
-    pickupAddress,
-    pickupTime: form["pickupTime"].value,
-    pickupDate: form["pickupDate"].value,
-    customerName: form["customerName"].value,
-    deliveryPhone,
-    deliveryAddress,
-    deliveryDate: form["deliveryDate"].value,
-    deliveryTime: form["deliveryTime"].value,
-    itemName: form["itemName"].value,
-    deliveryFees: deliveryFee,
-    tips: tip,
-    total,
-    instructions: form["instructions"] ? form["instructions"].value : "",
-    paymentMethod: form["paymentMethod"] ? form["paymentMethod"].value : "",
-    email: email || null,
-  };
+    const orderData = {
+      orderNumber: form['orderNumber'].value,
+      storeName: form['storeName'].value,
+      pickupPhone,
+      pickupAddress,
+      pickupTime: form['pickupTime'].value,pickupDate: form['pickupDate'].value,
+      customerName: form['customerName'].value,
+      deliveryPhone,
+      deliveryAddress,
+      deliveryDate: form['deliveryDate'].value,
+      deliveryTime: form['deliveryTime'].value,
+      itemName: form['itemName'].value,
+      deliveryFees: deliveryFee,
+      tips: tip,
+      total,
+      instructions: form['instructions'] ? form['instructions'].value : '',
+      paymentMethod: form['paymentMethod'] ? form['paymentMethod'].value : '',
+      email: email || null,
+    };
 
-  try {
+    try {
+      const res = await fetch('https://delivery-u9ub.onrender.com/submit-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData),
+      });
 
-    const res = await fetch("https://delivery-u9ub.onrender.com/submit-order", {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderData),
-    });
+      const data = await res.json();
 
-    const data = await response.json();
-
-    if (res.ok && data.success) {
-      setShowSuccess(true);
-      setTimeout(() => {
-        window.location.href = "/thank-you";
-      }, 2000);
-    } else {
-      alert("Submission failed: " + (result.error || "Unknown error"));
+      if (res.ok && data.success) {
+        setShowSuccess(true);
+        setTimeout(() => {
+          window.location.href = '/thank-you';
+        }, 2000);
+      } else {
+        alert('Submission failed: ' + (data.error || 'Unknown error'));
+        setIsSubmitting(false);
+      }
+    } catch (err) {
+      console.error('Error submitting order:', err);
+      alert('Network error or server not responding.');
       setIsSubmitting(false);
     }
-  } catch (err) {
-    console.error("Error submitting order:", err);
-    alert("Network error or server not responding.");
-    setIsSubmitting(false);
-  }
-};
+  };
 
+  if (isSubmitting) {
+    return (
+      <div className="fullscreen-loading">
+        <div className="spinner"></div>
+        {showSuccess ? (
+          <div className="success-message">✅ Order submitted successfully!</div>
+        ) : (
+          <p>Submitting your order...</p>
+        )}
+      </div>
+    );
+  }
 
   return (
     <form id="delivery-form" className="booking-form" onSubmit={handleSubmit}>
@@ -180,23 +194,12 @@ const [showSuccess, setShowSuccess] = useState(false);
 
         <div style={{ position: 'relative' }}>
           <PlaceAutocompleteElement
-  onPlaceChanged={(event) => {
-    const place = event.detail;       // Get selected place object
-    setPickupAddress(place);          // Save it into state
-  }}
-/>
-
-          {pickupStatus === 'OK' && (
-            <ul className="autocomplete-dropdown">
-              {pickupSuggestions.map(({ place_id, description }) => (
-                <li key={place_id} onClick={() => handleSelectPickup(description)}>{description}</li>
-              ))}
-            </ul>
-          )}
+            onPlaceChanged={(e) => setPickupAddress(e.detail)}
+          />
         </div>
 
         <input type="time" name="pickupTime" defaultValue="11:10" />
-        <input type="date" name="pickupDate" defaultValue="2025-05-30" />
+        <input type="date" name="pickupDate" defaultValue="2025-06-10" />
       </fieldset>
 
       <fieldset>
@@ -207,22 +210,11 @@ const [showSuccess, setShowSuccess] = useState(false);
 
         <div style={{ position: 'relative' }}>
           <PlaceAutocompleteElement
-  onPlaceChanged={(event) => {
-    const place = event.detail;
-    setDeliveryAddress(place);
-  }}
-/>
-
-          {deliveryStatus === 'OK' && (
-            <ul className="autocomplete-dropdown">
-              {deliverySuggestions.map(({ place_id, description }) => (
-                <li key={place_id} onClick={() => handleSelectDelivery(description)}>{description}</li>
-              ))}
-            </ul>
-          )}
+            onPlaceChanged={(e) => setDeliveryAddress(e.detail)}
+          />
         </div>
 
-        <input type="date" name="deliveryDate" defaultValue="2025-05-30" />
+        <input type="date" name="deliveryDate" defaultValue="2025-06-10" />
         <input type="time" name="deliveryTime" defaultValue="11:50" />
       </fieldset>
 
@@ -245,33 +237,21 @@ const [showSuccess, setShowSuccess] = useState(false);
           <option value="" disabled>Select payment method</option>
           <option value="Cash">Cash</option>
           <option value="Mobile Money">Mobile Money</option>
-        </select></fieldset>
+        </select>
+      </fieldset>
 
       {loadingFee && (
         <div className="spinner-container">
           <div className="spinner"></div>
           <p>Calculating delivery fee...</p>
         </div>
-      )}
+      )}{error && <p style={{ color: 'red' }}>{error}</p>}
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      <button type="submit" disabled={loadingFee}>
-        {loadingFee ? "Submitting..." : "Submit Order"}
+      <button type="submit" disabled={loadingFee || isSubmitting}>
+        {loadingFee ? 'Calculating Fee...' : 'Submit Order'}
       </button>
     </form>
   );
 }
-if (isSubmitting) {
-  return (
-    <div className="fullscreen-loading">
-      <div className="spinner"></div>
-      {showSuccess ? (
-        <div className="success-message">✅ Order submitted successfully!</div>
-      ) : (
-        <p>Submitting your order...</p>
-      )}
-    </div>
-  );
-}
+
 export default BookingForm;
