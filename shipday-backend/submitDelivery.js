@@ -6,6 +6,10 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+const EMAIL_SENDER = process.env.EMAIL_SENDER;
+const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD;
+const EMAIL_RECEIVER = process.env.EMAIL_RECEIVER;
+
 const router = express.Router();
 const verificationCodes = {}; // In-memory temporary storage
 
@@ -40,7 +44,7 @@ Fee: GH₵${order.fee}
 Pickup Verification Code: ${order.pickupCode}
 Delivery Verification Code: ${order.deliveryCode}
 Order ID: ${order.orderId}
-    `,
+    `
   };
 
   return transporter.sendMail(mailOptions);
@@ -76,7 +80,7 @@ router.post('/submit', async (req, res) => {
 
     // Send the email
     await sendOrderEmail(order);
-
+    
     // Respond to frontend
     res.json({
       success: true,

@@ -144,15 +144,15 @@ const [showSuccess, setShowSuccess] = useState(false);
   try {
     setIsSubmitting(true);
 
-    const res = await fetch("https://delivery-u9ub.onrender.com/submit-order", {
+    const res = await fetch("https://delivery-u9ub.onrender.com/submit-order/submit", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(orderData),
     });
 
-    const result = await res.json();
+    const data = await response.json();
 
-    if (res.ok && result.success) {
+    if (res.ok && data.success) {
       setShowSuccess(true);
       setTimeout(() => {
         window.location.href = "/thank-you";
