@@ -144,7 +144,7 @@ const [showSuccess, setShowSuccess] = useState(false);
   try {
     setIsSubmitting(true);
 
-    const res = await fetch("https://delivery-u9ub.onrender.com/submit-order/submit", {
+    const res = await fetch("https://delivery-u9ub.onrender.com/submit-order", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(orderData),
