@@ -26,13 +26,24 @@ const ThankYouPage = () => {
         <p className="sub-message">Your delivery has been booked successfully!</p>
 
         <div className="details-box">
-          <p><strong>Order Number:</strong> #{orderNumber}</p>
-          <p><strong>Pickup:</strong> {pickupAddress}</p>
-          <p><strong>Delivery:</strong> {deliveryAddress}</p>
-          <p><strong>Distance:</strong> {distance} km</p>
-          <p><strong>Delivery Fee:</strong> GH₵{deliveryFee}</p>
-          {tip && <p><strong>Tip:</strong> GH₵{tip}</p>}
-          <p className="total-amount"><strong>Total to Pay Rider:</strong> GH₵{total}</p>
+            <p><strong>Order Number:</strong> {orderData.orderNumber}</p>
+        <p><strong>Store Name:</strong> {orderData.storeName}</p>
+        <p><strong>Pickup Phone:</strong> {orderData.pickupPhone}</p>
+        <p><strong>Pickup Address:</strong> {orderData.pickupAddress}</p>
+        <p><strong>Pickup Time:</strong> {orderData.pickupTime}</p>
+        <p><strong>Pickup Date:</strong> {orderData.pickupDate}</p>
+        <p><strong>Customer Name:</strong> {orderData.customerName}</p>
+        <p><strong>Delivery Phone:</strong> {orderData.deliveryPhone}</p>
+        <p><strong>Delivery Address:</strong> {orderData.deliveryAddress}</p>
+        <p><strong>Delivery Time:</strong> {orderData.deliveryTime}</p>
+        <p><strong>Delivery Date:</strong> {orderData.deliveryDate}</p>
+        <p><strong>Item Name:</strong> {orderData.itemName}</p>
+        <p><strong>Delivery Fee:</strong> GH₵{orderData.deliveryFees}</p>
+        <p><strong>Tips:</strong> GH₵{orderData.tips}</p>
+        <p><strong>Total:</strong> GH₵{orderData.total}</p>
+        <p><strong>Instructions:</strong> {orderData.instructions || 'None'}</p>
+        <p><strong>Payment Method:</strong> {orderData.paymentMethod}</p>
+        <p><strong>Email:</strong> {orderData.email || 'N/A'}</p>
         </div>
 
         <div className="code-section">

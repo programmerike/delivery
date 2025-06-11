@@ -157,8 +157,8 @@ function BookingForm() {
       if (res.ok && data.success) {
         setShowSuccess(true);
         setTimeout(() => {
-          window.location.href = '/thank-you';
-        }, 2000);
+  window.location.href = `/thank-you?order=${encodeURIComponent(JSON.stringify(orderData))}`;
+}, 2000);
       } else {
         alert('Submission failed: ' + (data.error || 'Unknown error'));
         setIsSubmitting(false);
