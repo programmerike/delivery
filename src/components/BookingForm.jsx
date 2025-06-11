@@ -90,6 +90,7 @@ const [showSuccess, setShowSuccess] = useState(false);
 
   const handleSubmit = async (e) => {
   e.preventDefault();
+  setIsSubmitting(true);
 
   const form = e.target;
 
@@ -142,7 +143,6 @@ const [showSuccess, setShowSuccess] = useState(false);
   };
 
   try {
-    setIsSubmitting(true);
 
     const res = await fetch("https://delivery-u9ub.onrender.com/submit-order", {
       method: 'POST',
