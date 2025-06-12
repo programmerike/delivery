@@ -12,7 +12,7 @@ app.use(cors());
 app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
-const GOOGLE_SHEET_WEBHOOK = 'https://script.google.com/macros/s/AKfycbyfvMpxWU67_jfsFa4x23pUkyGHXWqUV-X5DfN4Mi5wtQbQQLUfSHj5ok6ZuSOc-XX2/exec';
+const GOOGLE_SHEET_WEBHOOK = 'https://script.google.com/macros/s/AKfycbwoVJlFb2GqYX2htcn_KOXUuAaJWS6VRJ37Y8ysNN2jWswKH2UQbTobx6rbFQvI3Thu7g/exec';
 
 // Setup mail transporter
 const transporter = nodemailer.createTransport({
