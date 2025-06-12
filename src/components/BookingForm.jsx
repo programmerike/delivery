@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import usePlacesAutocomplete from 'use-places-autocomplete';
 import { PlaceAutocompleteElement } from '@googlemaps/places-widget';
 import './BookingForm.css';
 
@@ -16,49 +15,8 @@ function BookingForm() {
 
   const total = Number(deliveryFee) + Number(tip || 0);
 
-  const {
-    ready: readyPickup,
-    value: pickupValue,
-    suggestions: { status: pickupStatus, data: pickupSuggestions },
-    setValue: setPickupValue,
-    clearSuggestions: clearPickupSuggestions,
-  } = usePlacesAutocomplete({ requestOptions: { componentRestrictions: { country: 'gh' } }, debounce: 300 });
-
-  const {
-    ready: readyDelivery,
-    value: deliveryValue,
-    suggestions: { status: deliveryStatus, data: deliverySuggestions },
-    setValue: setDeliveryValue,
-    clearSuggestions: clearDeliverySuggestions,
-  } = usePlacesAutocomplete({ requestOptions: { componentRestrictions: { country: 'gh' } }, debounce: 300 });
-
-  const handleSelectPickup = (address) => {
-    setPickupValue(address, false);
-    clearPickupSuggestions();
-    setPickupAddress(address);
-    triggerDistanceCalculation(address, deliveryAddress);
-  };
-
-  const handleSelectDelivery = (address) => {
-    setDeliveryValue(address, false);
-    clearDeliverySuggestions();
-    setDeliveryAddress(address);
-    triggerDistanceCalculation(pickupAddress, address);
-  };
-
-  const handlePickupInput = (e) => {
-    setPickupValue(e.target.value);
-    setPickupAddress(e.target.value);
-  };
-
-  const handleDeliveryInput = (e) => {
-    setDeliveryValue(e.target.value);
-    setDeliveryAddress(e.target.value);
-  };
-
   const triggerDistanceCalculation = async (pickup, delivery) => {
     setError(null);
-
     if (!pickup || !delivery) {
       setDistance(null);
       setDeliveryFee(0);
@@ -130,7 +88,8 @@ function BookingForm() {
       storeName: form['storeName'].value,
       pickupPhone,
       pickupAddress,
-      pickupTime: form['pickupTime'].value,pickupDate: form['pickupDate'].value,
+      pickupTime: form['pickupTime'].value,
+      pickupDate: form['pickupDate'].value,
       customerName: form['customerName'].value,
       deliveryPhone,
       deliveryAddress,
@@ -140,8 +99,8 @@ function BookingForm() {
       deliveryFees: deliveryFee,
       tips: tip,
       total,
-      instructions: form['instructions'] ? form['instructions'].value : '',
-      paymentMethod: form['paymentMethod'] ? form['paymentMethod'].value : '',
+      instructions: form['instructions']?.value || '',
+      paymentMethod: form['paymentMethod']?.value || '',
       email: email || null,
     };
 
@@ -157,8 +116,8 @@ function BookingForm() {
       if (res.ok && data.success) {
         setShowSuccess(true);
         setTimeout(() => {
-  window.location.href = `/thank-you?order=${encodeURIComponent(JSON.stringify(orderData))}`;
-}, 2000);
+          window.location.href = `/thank-you?order=${encodeURIComponent(JSON.stringify(orderData))}`;
+        }, 2000);
       } else {
         alert('Submission failed: ' + (data.error || 'Unknown error'));
         setIsSubmitting(false);
@@ -170,20 +129,15 @@ function BookingForm() {
     }
   };
 
-  if (isSubmitting) {
-    return (
-      <div className="fullscreen-loading">
-        <div className="spinner"></div>
-        {showSuccess ? (
-          <div className="success-message">✅ Order submitted successfully!</div>
-        ) : (
-          <p>Submitting your order...</p>
-        )}
-      </div>
-    );
-  }
-
-  return (
+  return isSubmitting ? (
+    <div className="fullscreen-loading">
+      <div className="spinner"></div>{showSuccess ? (
+        <div className="success-message">✅ Order submitted successfully!</div>
+      ) : (
+        <p>Submitting your order...</p>
+      )}
+    </div>
+  ) : (
     <form id="delivery-form" className="booking-form" onSubmit={handleSubmit}>
       <input type="text" placeholder="🔢 Order Number" name="orderNumber" required className="bold-input" />
 
@@ -191,13 +145,14 @@ function BookingForm() {
         <legend>📍 Pick-up From</legend>
         <input type="text" placeholder="🏪 Store Name" name="storeName" required />
         <input type="tel" placeholder="📞 +233 (000) 000-00-00" name="pickupPhone" required />
-
         <div style={{ position: 'relative' }}>
           <PlaceAutocompleteElement
-            onPlaceChanged={(e) => setPickupAddress(e.detail)}
+            onPlaceChanged={(e) => {
+              setPickupAddress(e.detail.formatted_address || e.detail.name);
+              triggerDistanceCalculation(e.detail.formatted_address || e.detail.name, deliveryAddress);
+            }}
           />
         </div>
-
         <input type="time" name="pickupTime" defaultValue="11:10" />
         <input type="date" name="pickupDate" defaultValue="2025-06-10" />
       </fieldset>
@@ -207,13 +162,14 @@ function BookingForm() {
         <input type="text" placeholder="👤 Customer Name" name="customerName" required />
         <input type="tel" placeholder="📞 +233 (000) 000-00-00" name="deliveryPhone" required />
         <input type="email" placeholder="✉️ Email Address optional" name="email" />
-
         <div style={{ position: 'relative' }}>
           <PlaceAutocompleteElement
-            onPlaceChanged={(e) => setDeliveryAddress(e.detail)}
+            onPlaceChanged={(e) => {
+              setDeliveryAddress(e.detail.formatted_address || e.detail.name);
+              triggerDistanceCalculation(pickupAddress, e.detail.formatted_address || e.detail.name);
+            }}
           />
         </div>
-
         <input type="date" name="deliveryDate" defaultValue="2025-06-10" />
         <input type="time" name="deliveryTime" defaultValue="11:50" />
       </fieldset>
@@ -232,7 +188,6 @@ function BookingForm() {
         />
         <input type="number" placeholder="💰 Total (₵)" name="total" value={total} readOnly />
         <textarea placeholder="📝 Special Instructions" name="instructions"></textarea>
-
         <select name="paymentMethod" defaultValue="">
           <option value="" disabled>Select payment method</option>
           <option value="Cash">Cash</option>
@@ -245,7 +200,8 @@ function BookingForm() {
           <div className="spinner"></div>
           <p>Calculating delivery fee...</p>
         </div>
-      )}{error && <p style={{ color: 'red' }}>{error}</p>}
+      )}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
 
       <button type="submit" disabled={loadingFee || isSubmitting}>
         {loadingFee ? 'Calculating Fee...' : 'Submit Order'}
