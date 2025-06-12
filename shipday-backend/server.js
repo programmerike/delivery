@@ -12,10 +12,20 @@ app.use(cors());
 app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
-const GOOGLE_SHEET_WEBHOOK = 'https://script.google.com/macros/s/AKfycbyfvMpxWU67_jfsFa4x23pUkyGHXWqUV-X5DfN4Mi5wtQbQQLUfSHj5ok6ZuSOc-XX2/exec'; // <-- Replace this
+const GOOGLE_SHEET_WEBHOOK = 'https://script.google.com/macros/s/AKfycbyfvMpxWU67_jfsFa4x23pUkyGHXWqUV-X5DfN4Mi5wtQbQQLUfSHj5ok6ZuSOc-XX2/exec';
+
+// Setup mail transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_SENDER,       // your Gmail address
+    pass: process.env.EMAIL_PASSWORD        // Gmail App Password (not your actual Gmail password)
+  }
+});
 
 app.post('/submit-order', async (req, res) => {
   const order = req.body;
+  console.log('📥 Received order:', order);
 
   // Format email content
   const emailBody = `
@@ -39,24 +49,17 @@ app.post('/submit-order', async (req, res) => {
   `;
 
   try {
-    // 1. Send email
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER, // your Gmail
-        pass: process.env.EMAIL_PASS  // Gmail App Password
-      }
-    });
-
-    await transporter.sendMail({
-      from: `"SeeYouSoon Courier" <${process.env.EMAIL_USER}>`,
+    // Send email
+    const emailResult = await transporter.sendMail({
+      from: `SeeYouSoon Courier <${process.env.EMAIL_USER}>`,
       to: process.env.EMAIL_USER,
       subject: `📦 New Delivery Order: ${order.orderNumber}`,
       html: emailBody
     });
+    console.log('📧 Email sent:', emailResult.response);
 
-    // 2. Log order in Google Sheet
-    await fetch(GOOGLE_SHEET_WEBHOOK, {
+    // Send to Google Sheets webhook
+    const webhookResult = await fetch(GOOGLE_SHEET_WEBHOOK, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -69,17 +72,19 @@ app.post('/submit-order', async (req, res) => {
         fee: order.fee,
         tip: order.tip,
         total: order.total,
-        notes: order.instructions || '',
+        notes: order.instructions,
         pickupCode: order.pickupCode,
         deliveryCode: order.deliveryCode
       })
     });
 
-    res.status(200).json({ success: true, message: 'Order emailed and logged successfully' });
+    const webhookText = await webhookResult.text();
+    console.log('📄 Google Sheet webhook response:', webhookText);
 
+    res.status(200).json({ success: true, message: 'Order processed' });
   } catch (err) {
-    console.error('Order submission error:', err);
-    res.status(500).json({ success: false, error: 'Failed to process order' });
+    console.error('❌ Error in processing:', err.message);
+    res.status(500).json({ success: false, error: 'Order failed' });
   }
 });
 
