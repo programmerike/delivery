@@ -184,7 +184,7 @@ function BookingForm() {
   }
 
   return (
-    <form id="delivery-form" className="booking-form" onSubmit={handleSubmit}>
+    <form id="delivery-form" className="booking-form" onSubmit={handleSubmit} action="https://localhost:5000/create-order">
       <input type="text" placeholder="🔢 Order Number" name="orderNumber" required className="bold-input" />
 
       <fieldset>

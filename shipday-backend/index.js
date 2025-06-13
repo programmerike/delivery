@@ -2,6 +2,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import morgan from 'morgan';
 import nodemailer from 'nodemailer';
 import submitDelivery from './submitDelivery.js';
 
@@ -11,6 +12,7 @@ dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(morgan('dev'));
 app.use('/submit-order', submitDelivery);
 
 const PORT = process.env.PORT || 5000;
@@ -61,9 +63,14 @@ app.post('/submit-order', async (req, res) => {
   }
 });
 
-app.get('/', (req, res) => {
+app.post('/', (req, res) => {
   res.send('SeeYouSoon backend is running.');
 });
+
+app.post('/create-order', (req, res) =>{
+  let userData = req.body;
+  !userData ? null : console.log(userData)
+})
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
