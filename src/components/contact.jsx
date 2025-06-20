@@ -3,7 +3,7 @@ import React from "react";
 function Contact() {
   return (
     <section className="contact-section" id="contact-us"
-      style={{ padding: "4rem 2rem", background: "#fff8f2", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", 
+      style={{ background: "#fff8f2", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", 
         minHeight: "80vh", padding: "3rem 2rem"
       }}>
         <h2>📬 Contact Us</h2>
