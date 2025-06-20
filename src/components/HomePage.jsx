@@ -10,7 +10,22 @@ export default function HomePage() {
       <Hero />
       <AboutUs />
         <OurServices />
-      <DeliveryForm />
+         <DeliveryForm />
+        <section id="book-delivery" style={{ padding: '2rem 0', backgroundColor: '#f9f9f9' }}>
+  
+  <iframe
+    src="https://www.deliveryorderforms.com/orderWithoutUpfrontPay/PZ71YypMdP"  
+    title="Book a Delivery with Shipday"
+    style={{
+      width: '100%',
+      height: '800px',
+      border: 'none',
+      display: 'block',
+      margin: '0 auto'
+    }}
+  />
+</section>
+     
       
     </>
   );

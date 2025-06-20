@@ -17,16 +17,24 @@ export default function Hero() {
 
           <div className="fancy-button">
             <button
-            type="button" className="animated-submit" style={{ marginTop: "1rem" }}
-              onClick={() => {
-                const form = document.getElementById("delivery-form");
-                if (form) {
-                  form.scrollIntoView({ behavior: "smooth" });
-                }
-              }}
-            >
-              Book a Delivery
-            </button>
+  onClick={() => {
+    const formSection = document.getElementById('book-delivery');
+    if (formSection) {
+      formSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  }}
+  style={{
+    padding: '12px 24px',
+    backgroundColor: '#ff5722',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '1rem',
+  }}
+>
+  Book a Delivery
+</button>
           </div>
         </div>
       </div>

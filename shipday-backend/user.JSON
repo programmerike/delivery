@@ -1,0 +1,18 @@
+{
+    "orderNumber" : "SYS645622",
+    "storeName" : "Replublic Bar",
+    "pickupPhone" : "+0000000000",
+    "pickupTime" : "02:09PM",
+    "pickupDate" : "00/00/00",
+    "customerName" : "Isaac",
+    "deliveryPhone" : "+0000000000",
+    "email" : "isaac@youremail.com",
+    "deliveryDate" : "00/00/00",
+    "deliveryTime" : "02:09PM",
+    "itemName" : "Food and Drinks",
+    "deliveryFees" : "100.00",
+    "tips" : "20.00",
+    "total" : "955.00",
+    "instructions" : "Do not opem",
+    "paymentMethod" : "Mobile Money"
+}

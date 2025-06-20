@@ -19,7 +19,6 @@ const PORT = process.env.PORT || 5000;
 
 app.post('/submit-order', async (req, res) => {
   const order = req.body;
-
   // Format email content
   const emailBody = `
     <h2>New Delivery Order</h2>
@@ -49,28 +48,22 @@ app.post('/submit-order', async (req, res) => {
       }
     });
 
-    await transporter.sendMail({
-      from: `"SeeYouSoon Courier" <${process.env.EMAIL_USER}>`,
-      to: process.env.EMAIL_USER,
-      subject: `📦 New Delivery Order: ${order.orderNumber}`,
-      html: emailBody
-    });
-
-    res.status(200).json({ success: true, message: 'Email sent successfully' });
+    // await transporter.sendMail({
+    //   from: `"SeeYouSoon Courier" <${process.env.EMAIL_USER}>`,
+    //   to: process.env.EMAIL_USER,
+    //   subject: `📦 New Delivery Order: ${order.orderNumber}`,
+    //   html: emailBody
+    // });
+    res.status(200).json({ success: true, message: 'Email sent successfully' , order: order});
   } catch (err) {
     console.error('Email error:', err);
     res.status(500).json({ success: false, error: 'Email failed to send' });
   }
 });
 
-app.post('/', (req, res) => {
+app.get('/', (req, res) => {
   res.send('SeeYouSoon backend is running.');
 });
-
-app.post('/create-order', (req, res) =>{
-  let userData = req.body;
-  !userData ? null : console.log(userData)
-})
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
