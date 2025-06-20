@@ -1,3 +1,4 @@
+/* 
 import { useState, useContext } from 'react';
 import usePlacesAutocomplete from 'use-places-autocomplete';
 import { PlaceAutocompleteElement } from '@googlemaps/places-widget';
@@ -266,3 +267,4 @@ const [message, setMessage] = useState('');
 }
 
 export default BookingForm;
+ */

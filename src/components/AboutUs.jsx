@@ -1,9 +1,10 @@
 import React from "react";
-import "../styles/AboutUs.css"; // make sure this file exists
+import "../styles/AboutUs.css"; 
 
 export default function AboutUs() {
   return (
-    <section className="about-us">
+    <section className="about-us" id="about-us"
+      style={{ padding: "4rem 2rem", background: "#f9f9f9", textAlign: "center" }}>
       <div className="about-us-container">
         <h2>About Us</h2>
         <p>

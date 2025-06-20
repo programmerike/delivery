@@ -14,7 +14,8 @@ export default function OurServices() {
 
    ];
   return (
-    <section className="services-section">
+    <section className="services-section" id="our-services"
+      style={{ padding: "4rem 2rem", background: "#fff", textAlign: "center" }}>
       <h1>
         <i>
           📦 Our Services

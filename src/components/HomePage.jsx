@@ -3,14 +3,19 @@ import Hero from "./Hero";
 import DeliveryForm from "./DeliveryForm";
 import OurServices from "./OurServices";
 import AboutUs from "./AboutUs";
+import Contact from "./contact";
+import Navbar from "./Navbar";
 
 export default function HomePage() {
   return (
     <>
+    <Navbar />
       <Hero />
       <AboutUs />
         <OurServices />
+         
          <DeliveryForm />
+         
         <section id="book-delivery" style={{ padding: '2rem 0', backgroundColor: '#f9f9f9' }}>
   
   <iframe

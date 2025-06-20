@@ -155,3 +155,18 @@ textarea {
     transform: translateY(0);
   }
 }
+
+
+@keyframes zoomPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.pulsing-button {
+  animation: zoomPulse 1.5s infinite;
+  transition: transform 0.3s ease;
+}

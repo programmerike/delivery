@@ -111,9 +111,9 @@ export default function DeliveryForm() {
   };
 
   return (
-    <form id="delivery-form" onSubmit={handleSubmit}>
+    <form id="delivery-form" style={{ minHeight: "80vh", padding: "3rem 2rem" }} onSubmit={handleSubmit}>
       
-      <div className="contact-section">
+      <div className="contact-section"> 
      <h2><i>
             Contact Us
             </i></h2>
